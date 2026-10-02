@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Giỏ hàng')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <h3 class="page-title mb-3">Giỏ hàng <span class="text-muted fs-6" th:text="'(' + ${items.size()} + ' khóa học)'"></span></h3>
+
+    <div class="row g-4" th:unless="${items.empty}">
+        <div class="col-lg-8">
+            <div class="box p-0">
+                <div class="d-flex gap-3 p-3 border-bottom align-items-center" th:each="item : ${items}">
+                    <a th:href="@{/courses/{id}(id=${item.course.id})}" style="width: 160px; flex-shrink: 0" class="rounded overflow-hidden">
+                        <div th:replace="~{fragments/layout :: thumb(${item.course})}"></div>
+                    </a>
+                    <div class="flex-grow-1">
+                        <a class="fw-semibold text-decoration-none text-dark" th:href="@{/courses/{id}(id=${item.course.id})}"
+                           th:text="${item.course.title}">Tên khóa</a>
+                        <div class="small text-muted" th:text="'GV: ' + ${item.course.instructor.fullName}"></div>
+                        <div class="small text-muted" th:text="${item.course.totalLessons} + ' bài học · ' + ${item.course.level.label}"></div>
+                    </div>
+                    <div class="text-end">
+                        <div class="price mb-2" th:text="${@fmt.money(item.course.price)}">0 đ</div>
+                        <form th:action="@{/cart/remove/{id}(id=${item.course.id})}" method="post">
+                            <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i> Xóa</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="box">
+                <h5 class="fw-bold mb-3">Thanh toán</h5>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Tạm tính</span><span th:text="${@fmt.money(total)}">0 đ</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2 text-muted small">
+                    <span>Giảm giá</span><span>0 đ</span>
+                </div>
+                <!-- TODO (hand-off): ô nhập mã giảm giá (bảng coupons) -->
+                <div class="input-group input-group-sm mb-3">
+                    <input class="form-control" placeholder="Mã giảm giá (sắp có)" disabled>
+                    <button class="btn btn-outline-secondary" disabled>Áp dụng</button>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between fs-5 fw-bold mb-3">
+                    <span>Tổng cộng</span><span class="price" th:text="${@fmt.money(total)}">0 đ</span>
+                </div>
+                <form th:action="@{/checkout}" method="post">
+                    <button class="btn btn-primary w-100 py-2" type="submit">
+                        <i class="bi bi-shield-lock me-1"></i>Tiến hành thanh toán</button>
+                </form>
+                <p class="small text-muted mt-3 mb-0">Sau khi thanh toán, khóa học sẽ xuất hiện trong mục "Khóa học của tôi".</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="box text-center py-5" th:if="${items.empty}">
+        <i class="bi bi-cart-x fs-1 text-muted d-block mb-2"></i>
+        <p class="text-muted">Giỏ hàng của bạn đang trống.</p>
+        <a class="btn btn-primary" th:href="@{/courses}">Khám phá khóa học</a>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

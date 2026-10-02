@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Quản lý danh mục')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div th:replace="~{fragments/layout :: adminMenu('categories')}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <h3 class="page-title mb-3">Danh mục khóa học</h3>
+            <div class="row g-4">
+                <!-- ===== Bảng ===== -->
+                <div class="col-xl-7">
+                    <div class="box p-0 table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead class="table-light">
+                            <tr><th class="ps-3">Danh mục</th><th>Số khóa</th><th class="text-end pe-3"></th></tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="cat : ${categories}">
+                                <td class="ps-3">
+                                    <i th:class="|bi ${cat.icon} text-primary me-2|"></i>
+                                    <span class="fw-semibold" th:text="${cat.name}"></span>
+                                    <div class="small text-muted" th:text="${cat.description}"></div>
+                                </td>
+                                <td th:text="${courseCounts.get(cat.id)}">0</td>
+                                <td class="text-end pe-3 text-nowrap">
+                                    <a class="btn btn-sm btn-outline-secondary" th:href="@{/admin/categories(editId=${cat.id})}">
+                                        <i class="bi bi-pencil"></i></a>
+                                    <form class="d-inline" method="post" th:action="@{/admin/categories/{id}/delete(id=${cat.id})}"
+                                          onsubmit="return confirm('Xóa danh mục này?')">
+                                        <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ===== Form thêm/sửa ===== -->
+                <div class="col-xl-5">
+                    <form class="box" method="post" th:action="@{/admin/categories/save}">
+                        <h5 class="fw-bold mb-3" th:text="${editing.id == null} ? 'Thêm danh mục' : 'Sửa danh mục'"></h5>
+                        <input type="hidden" name="id" th:value="${editing.id}">
+                        <div class="mb-3">
+                            <label class="form-label">Tên danh mục</label>
+                            <input class="form-control" name="name" th:value="${editing.name}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mô tả</label>
+                            <textarea class="form-control" name="description" rows="3" th:text="${editing.description}"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Icon (Bootstrap Icons)</label>
+                            <input class="form-control" name="icon" th:value="${editing.icon}" placeholder="bi-code-slash">
+                            <div class="form-text">Tra tên icon tại icons.getbootstrap.com</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary" type="submit">Lưu</button>
+                            <a class="btn btn-outline-secondary" th:if="${editing.id != null}" th:href="@{/admin/categories}">Hủy</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

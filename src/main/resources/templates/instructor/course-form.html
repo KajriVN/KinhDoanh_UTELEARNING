@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${form.id == null} ? 'Tạo khóa học' : 'Sửa khóa học')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div th:replace="~{fragments/layout :: instructorMenu(${form.id == null} ? 'new' : 'courses')}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <h3 class="page-title" th:text="${form.id == null} ? 'Tạo khóa học mới' : 'Sửa thông tin khóa học'">Tạo khóa học</h3>
+            <p class="text-muted" th:if="${form.id == null}">Bước 1: nhập thông tin chung. Bước 2: thêm chương và bài học. Bước 3: gửi admin duyệt.</p>
+            <div class="mb-3" th:if="${form.id != null}">
+                <a class="btn btn-sm btn-outline-primary" th:href="@{/instructor/courses/{id}/curriculum(id=${form.id})}">
+                    <i class="bi bi-list-nested me-1"></i>Quản lý chương &amp; bài học</a>
+            </div>
+
+            <form class="box" method="post" enctype="multipart/form-data" th:object="${form}"
+                  th:action="${form.id == null} ? @{/instructor/courses/new} : @{/instructor/courses/{id}/edit(id=${form.id})}">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label">Tên khóa học <span class="text-danger">*</span></label>
+                        <input class="form-control" th:field="*{title}"
+                               th:classappend="${#fields.hasErrors('title')} ? 'is-invalid'">
+                        <div class="invalid-feedback" th:errors="*{title}"></div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Mô tả ngắn</label>
+                        <input class="form-control" th:field="*{shortDescription}"
+                               th:classappend="${#fields.hasErrors('shortDescription')} ? 'is-invalid'"
+                               placeholder="1-2 câu hiện ở trang chi tiết">
+                        <div class="invalid-feedback" th:errors="*{shortDescription}"></div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Mô tả chi tiết</label>
+                        <textarea class="form-control" rows="6" th:field="*{description}"
+                                  placeholder="Khóa học dạy gì, dành cho ai, yêu cầu gì..."></textarea>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Danh mục <span class="text-danger">*</span></label>
+                        <select class="form-select" th:field="*{categoryId}"
+                                th:classappend="${#fields.hasErrors('categoryId')} ? 'is-invalid'">
+                            <option value="">-- Chọn --</option>
+                            <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>
+                        </select>
+                        <div class="invalid-feedback" th:errors="*{categoryId}"></div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Trình độ <span class="text-danger">*</span></label>
+                        <select class="form-select" th:field="*{level}">
+                            <option th:each="lv : ${levels}" th:value="${lv}" th:text="${lv.label}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Giá (VND) <span class="text-danger">*</span></label>
+                        <input type="number" min="0" step="1000" class="form-control" th:field="*{price}"
+                               th:classappend="${#fields.hasErrors('price')} ? 'is-invalid'">
+                        <div class="invalid-feedback" th:errors="*{price}"></div>
+                        <div class="form-text">Nhập 0 nếu miễn phí</div>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label">Ảnh bìa</label>
+                        <input type="file" class="form-control" th:field="*{thumbnail}" accept="image/*">
+                        <div class="form-text">Tỉ lệ 16:9, upload lên Cloudinary. Bỏ trống nếu không đổi.</div>
+                    </div>
+                    <div class="col-md-4" th:if="*{currentThumbnailUrl != null}">
+                        <img th:src="*{currentThumbnailUrl}" class="img-fluid rounded" alt="thumbnail">
+                        <input type="hidden" th:field="*{currentThumbnailUrl}">
+                    </div>
+                </div>
+                <hr>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary" type="submit" th:text="${form.id == null} ? 'Tạo khóa học' : 'Lưu thay đổi'">Lưu</button>
+                    <a class="btn btn-outline-secondary" th:href="@{/instructor/courses}">Quay lại</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

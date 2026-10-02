@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Đơn hàng của tôi')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <h3 class="page-title mb-3">Đơn hàng của tôi</h3>
+
+    <div class="box p-0 table-responsive" th:unless="${orders.empty}">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+            <tr>
+                <th class="ps-4">Mã đơn</th>
+                <th>Ngày tạo</th>
+                <th>Số khóa học</th>
+                <th>Tổng tiền</th>
+                <th>Trạng thái</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="o : ${orders}">
+                <td class="ps-4 fw-semibold" th:text="${o.orderCode}"></td>
+                <td th:text="${@fmt.dateTime(o.createdAt)}"></td>
+                <td th:text="${o.items.size()}"></td>
+                <td th:text="${@fmt.money(o.finalAmount)}"></td>
+                <td>
+                    <span class="badge"
+                          th:classappend="${o.status.name() == 'PAID'} ? 'bg-success' : (${o.status.name() == 'PENDING'} ? 'bg-warning text-dark' : 'bg-secondary')"
+                          th:text="${o.status.label}"></span>
+                </td>
+                <td class="text-end pe-4">
+                    <a th:if="${o.status.name() == 'PENDING'}" class="btn btn-sm btn-primary"
+                       th:href="@{/payment/{c}(c=${o.orderCode})}">Thanh toán</a>
+                    <a class="btn btn-sm btn-outline-secondary" th:href="@{/orders/{c}(c=${o.orderCode})}">Chi tiết</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="box text-center py-5 text-muted" th:if="${orders.empty}">
+        <i class="bi bi-receipt fs-1 d-block mb-2"></i>Bạn chưa có đơn hàng nào.
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

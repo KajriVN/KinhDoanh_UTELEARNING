@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Tin nhắn')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4" style="max-width: 900px">
+    <a th:if="${me.id == student.id}" th:href="@{/learn/{id}(id=${course.id})}" class="small text-decoration-none">
+        <i class="bi bi-arrow-left"></i> Quay lại bài học</a>
+    <a th:if="${me.id != student.id}" th:href="@{/instructor/chats}" class="small text-decoration-none">
+        <i class="bi bi-arrow-left"></i> Danh sách tin nhắn</a>
+
+    <div class="box p-0 mt-2 overflow-hidden">
+        <!-- header -->
+        <div class="d-flex align-items-center gap-3 p-3 border-bottom">
+            <th:block th:replace="~{fragments/layout :: avatar(${partner}, 44)}"></th:block>
+            <div class="flex-grow-1">
+                <div class="fw-bold" th:text="${partner.fullName}">Tên</div>
+                <div class="small text-muted" th:text="'Khóa học: ' + ${course.title}"></div>
+            </div>
+            <span id="status" class="badge bg-secondary">Đang kết nối...</span>
+        </div>
+
+        <!-- danh sách tin nhắn -->
+        <div id="chat-box" class="chat-box"
+             th:data-course-id="${course.id}" th:data-student-id="${student.id}" th:data-my-id="${me.id}">
+            <div th:each="m : ${messages}" class="msg" th:classappend="${m.sender.id == me.id} ? 'mine'">
+                <div class="bubble">
+                    <div th:text="${m.content}">Nội dung</div>
+                    <div class="time" th:text="${#temporals.format(m.sentAt, 'HH:mm dd/MM')}"></div>
+                </div>
+            </div>
+            <div id="empty-hint" class="text-center text-muted small mt-5" th:if="${messages.empty}">
+                Chưa có tin nhắn. Hãy gửi câu hỏi đầu tiên!
+            </div>
+        </div>
+
+        <!-- ô nhập -->
+        <form id="chat-form" class="d-flex gap-2 p-3 border-top" autocomplete="off">
+            <input id="chat-input" class="form-control" placeholder="Nhập tin nhắn..." maxlength="1000" required>
+            <button class="btn btn-primary px-4" type="submit"><i class="bi bi-send"></i></button>
+        </form>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script th:src="@{/js/chat.js}"></script>
+</body>
+</html>

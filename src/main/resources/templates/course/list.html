@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Khóa học')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <div class="d-flex justify-content-between align-items-end mb-3">
+        <div>
+            <h3 class="page-title">Tất cả khóa học</h3>
+            <div class="text-muted small">
+                Tìm thấy <b th:text="${coursePage.totalElements}">0</b> khóa học
+                <span th:if="${keyword != null and !#strings.isEmpty(keyword)}">cho từ khóa "<b th:text="${keyword}"></b>"</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- ===== Bộ lọc ===== -->
+        <div class="col-lg-3">
+            <form class="box" th:action="@{/courses}" method="get">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Từ khóa</label>
+                    <input class="form-control" name="keyword" th:value="${keyword}" placeholder="Tên khóa học...">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Danh mục</label>
+                    <select class="form-select" name="categoryId">
+                        <option value="">Tất cả</option>
+                        <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"
+                                th:selected="${cat.id == categoryId}"></option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Học phí</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="price" value="" id="pAll"
+                               th:checked="${price == null or price == ''}">
+                        <label class="form-check-label" for="pAll">Tất cả</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="price" value="free" id="pFree"
+                               th:checked="${price == 'free'}">
+                        <label class="form-check-label" for="pFree">Miễn phí</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="price" value="paid" id="pPaid"
+                               th:checked="${price == 'paid'}">
+                        <label class="form-check-label" for="pPaid">Có phí</label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Sắp xếp</label>
+                    <select class="form-select" name="sort">
+                        <option value="newest" th:selected="${sort == 'newest'}">Mới nhất</option>
+                        <option value="price_asc" th:selected="${sort == 'price_asc'}">Giá tăng dần</option>
+                        <option value="price_desc" th:selected="${sort == 'price_desc'}">Giá giảm dần</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary w-100" type="submit"><i class="bi bi-funnel me-1"></i>Lọc</button>
+                <a class="btn btn-link w-100 mt-1" th:href="@{/courses}">Xóa bộ lọc</a>
+            </form>
+        </div>
+
+        <!-- ===== Danh sách ===== -->
+        <div class="col-lg-9">
+            <div class="row g-4">
+                <div class="col-sm-6 col-xl-4" th:each="c : ${coursePage.content}">
+                    <div th:replace="~{fragments/layout :: courseCard(${c})}"></div>
+                </div>
+            </div>
+
+            <div class="box text-center text-muted py-5" th:if="${coursePage.empty}">
+                <i class="bi bi-search fs-1 d-block mb-2"></i>
+                Không tìm thấy khóa học phù hợp.
+            </div>
+
+            <nav th:replace="~{fragments/layout :: pagination(${coursePage})}"></nav>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

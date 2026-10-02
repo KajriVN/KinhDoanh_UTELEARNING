@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Khóa học giảng dạy')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div th:replace="~{fragments/layout :: instructorMenu('courses')}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="page-title mb-0">Khóa học của tôi</h3>
+                <a class="btn btn-primary" th:href="@{/instructor/courses/new}"><i class="bi bi-plus-lg me-1"></i>Tạo khóa học</a>
+            </div>
+
+            <div class="box p-0 table-responsive" th:unless="${courses.empty}">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Khóa học</th>
+                        <th>Giá</th>
+                        <th>Bài học</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end pe-3">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="c : ${courses}">
+                        <td class="ps-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <div style="width: 90px; flex-shrink: 0" class="rounded overflow-hidden">
+                                    <div th:replace="~{fragments/layout :: thumb(${c})}"></div>
+                                </div>
+                                <div>
+                                    <a class="fw-semibold text-dark text-decoration-none" th:href="@{/courses/{id}(id=${c.id})}"
+                                       th:text="${c.title}"></a>
+                                    <div class="small text-muted" th:text="${c.category != null ? c.category.name : ''}"></div>
+                                    <div class="small text-danger" th:if="${c.status.name() == 'REJECTED'}">
+                                        Lý do: <span th:text="${c.rejectReason}"></span></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-nowrap" th:text="${@fmt.price(c.price)}"></td>
+                        <td th:text="${c.totalLessons}"></td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${c.status.name() == 'PUBLISHED'} ? 'bg-success' : (${c.status.name() == 'PENDING'} ? 'bg-warning text-dark' : (${c.status.name() == 'REJECTED'} ? 'bg-danger' : 'bg-secondary'))"
+                                  th:text="${c.status.label}"></span>
+                        </td>
+                        <td class="text-end pe-3 text-nowrap">
+                            <a class="btn btn-sm btn-outline-primary" title="Nội dung"
+                               th:href="@{/instructor/courses/{id}/curriculum(id=${c.id})}"><i class="bi bi-list-nested"></i></a>
+                            <a class="btn btn-sm btn-outline-secondary" title="Sửa thông tin"
+                               th:href="@{/instructor/courses/{id}/edit(id=${c.id})}"><i class="bi bi-pencil"></i></a>
+                            <a class="btn btn-sm btn-outline-info" title="Học viên"
+                               th:href="@{/instructor/courses/{id}/students(id=${c.id})}"><i class="bi bi-people"></i></a>
+                            <form class="d-inline" method="post" th:if="${c.status.name() == 'DRAFT' or c.status.name() == 'REJECTED'}"
+                                  th:action="@{/instructor/courses/{id}/submit(id=${c.id})}">
+                                <button class="btn btn-sm btn-success" type="submit" title="Gửi duyệt"><i class="bi bi-send"></i></button>
+                            </form>
+                            <form class="d-inline" method="post" th:action="@{/instructor/courses/{id}/delete(id=${c.id})}"
+                                  onsubmit="return confirm('Xóa khóa học này?')">
+                                <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="box text-center py-5" th:if="${courses.empty}">
+                <i class="bi bi-easel fs-1 text-muted d-block mb-2"></i>
+                <p class="text-muted">Bạn chưa có khóa học nào.</p>
+                <a class="btn btn-primary" th:href="@{/instructor/courses/new}">Tạo khóa học đầu tiên</a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

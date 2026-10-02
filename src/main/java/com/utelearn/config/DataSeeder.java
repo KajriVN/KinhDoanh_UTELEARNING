@@ -2,6 +2,8 @@ package com.utelearn.config;
 
 import com.utelearn.entity.*;
 import com.utelearn.repository.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,7 @@ import java.math.BigDecimal;
 @Component
 public class DataSeeder implements CommandLineRunner {
 
+    private static final Logger log = LoggerFactory.getLogger(DataSeeder.class);
     private static final String DOG_VIDEO = "https://res.cloudinary.com/demo/video/upload/dog.mp4";
 
     private final UserRepository userRepository;
@@ -177,7 +180,8 @@ public class DataSeeder implements CommandLineRunner {
         sendChat(spring, cuong, an, "Em kiểm tra lại username/password trong application.properties nhé.");
         sendChat(spring, cuong, cuong, "Dạ em chạy được rồi, cảm ơn thầy!");
 
-        System.out.println(">>> Đã tạo dữ liệu mẫu. Admin: admin@utelearn.vn / admin123 (" + admin.getId() + ")");
+        // in ra console không dấu cho khỏi lỗi font trên Windows
+        log.info(">>> Da tao du lieu mau. Admin: {} / admin123", admin.getEmail());
     }
 
     private User createUser(String fullName, String email, String rawPassword, Role role, String bio) {

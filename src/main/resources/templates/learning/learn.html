@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${lesson.title})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container-fluid py-3 px-lg-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <div>
+            <a th:href="@{/courses/{id}(id=${course.id})}" class="small text-decoration-none">
+                <i class="bi bi-arrow-left"></i> Về trang khóa học</a>
+            <h5 class="fw-bold mb-0 mt-1" th:text="${course.title}">Tên khóa</h5>
+        </div>
+        <div class="d-flex align-items-center gap-3" th:if="${enrollment != null}">
+            <div style="width: 200px">
+                <div class="d-flex justify-content-between small">
+                    <span>Tiến độ</span><b th:text="${enrollment.progressPercent} + '%'"></b>
+                </div>
+                <div class="progress" style="height: 8px">
+                    <div class="progress-bar bg-success" th:style="|width: ${enrollment.progressPercent}%|"></div>
+                </div>
+            </div>
+            <a class="btn btn-outline-primary btn-sm" th:href="@{/learn/{id}/chat(id=${course.id})}">
+                <i class="bi bi-chat-dots me-1"></i>Hỏi giảng viên</a>
+        </div>
+    </div>
+
+    <div class="learn-layout">
+        <div class="row g-0">
+            <!-- ===== Video + nội dung ===== -->
+            <div class="col-lg-8 col-xl-9">
+                <div class="video-wrap">
+                    <div th:if="${lesson.youtube}" class="ratio ratio-16x9">
+                        <iframe th:src="${lesson.youtubeEmbedUrl}" title="video" allowfullscreen
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                    </div>
+                    <video th:if="${lesson.videoUrl != null and !lesson.youtube}" th:src="${lesson.videoUrl}" controls></video>
+                    <div th:if="${lesson.videoUrl == null}" class="text-white-50 text-center py-5">
+                        <i class="bi bi-file-text fs-1 d-block"></i>Bài học này không có video
+                    </div>
+                </div>
+
+                <div class="p-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                        <div>
+                            <div class="small text-muted" th:text="${lesson.section.title}">Chương</div>
+                            <h4 class="fw-bold mb-0" th:text="${lesson.title}">Bài học</h4>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a th:if="${prevLesson != null}" class="btn btn-outline-secondary"
+                               th:href="@{/learn/{c}(c=${course.id}, lessonId=${prevLesson.id})}"><i class="bi bi-chevron-left"></i> Bài trước</a>
+
+                            <!-- chỉ học viên đã đăng ký mới lưu tiến độ được -->
+                            <th:block th:if="${enrollment != null}">
+                                <span th:if="${completedIds.contains(lesson.id)}" class="btn btn-success disabled">
+                                    <i class="bi bi-check2-circle"></i> Đã hoàn thành</span>
+                                <form th:unless="${completedIds.contains(lesson.id)}" method="post"
+                                      th:action="@{/learn/{c}/lessons/{l}/complete(c=${course.id}, l=${lesson.id})}">
+                                    <button class="btn btn-success" type="submit"><i class="bi bi-check2"></i> Hoàn thành bài học</button>
+                                </form>
+                            </th:block>
+
+                            <a th:if="${nextLesson != null}" class="btn btn-primary"
+                               th:href="@{/learn/{c}(c=${course.id}, lessonId=${nextLesson.id})}">Bài sau <i class="bi bi-chevron-right"></i></a>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info small" th:if="${enrollment == null}">
+                        Bạn đang xem ở chế độ học thử / xem trước. Tiến độ sẽ không được lưu.
+                    </div>
+
+                    <div class="lesson-content" th:text="${lesson.content}">Nội dung bài học</div>
+
+                    <!-- TODO (hand-off): khu vực Hỏi đáp / bình luận của bài học + bài tập gắn với bài học -->
+                </div>
+            </div>
+
+            <!-- ===== Danh sách bài (sidebar) ===== -->
+            <div class="col-lg-4 col-xl-3 learn-sidebar">
+                <div class="p-3 fw-bold border-bottom">Nội dung khóa học</div>
+                <th:block th:each="s : ${course.sections}">
+                    <div class="section-head" th:text="${s.title}">Chương</div>
+                    <a th:each="l : ${s.lessons}" class="lesson-link"
+                       th:classappend="${l.id == lesson.id} ? 'current'"
+                       th:href="@{/learn/{c}(c=${course.id}, lessonId=${l.id})}">
+                        <i th:if="${completedIds.contains(l.id)}" class="bi bi-check-circle-fill done"></i>
+                        <i th:unless="${completedIds.contains(l.id)}" class="bi bi-play-circle text-muted"></i>
+                        <span class="flex-grow-1" th:text="${l.title}">Bài</span>
+                        <small class="text-muted" th:text="${l.durationMinutes} + 'p'"></small>
+                    </a>
+                </th:block>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

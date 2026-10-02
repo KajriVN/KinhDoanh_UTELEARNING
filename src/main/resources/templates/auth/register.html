@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Đăng ký')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container">
+    <div class="auth-wrap">
+        <div class="box p-4 p-md-5">
+            <h3 class="fw-bold text-center mb-1">Tạo tài khoản</h3>
+            <p class="text-center text-muted mb-4">Đăng ký miễn phí để bắt đầu học</p>
+
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <form th:action="@{/auth/register}" th:object="${form}" method="post" novalidate>
+                <div class="mb-3">
+                    <label class="form-label">Họ và tên</label>
+                    <input type="text" th:field="*{fullName}" class="form-control"
+                           th:classappend="${#fields.hasErrors('fullName')} ? 'is-invalid'" placeholder="Nguyễn Văn A">
+                    <div class="invalid-feedback" th:errors="*{fullName}"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" th:field="*{email}" class="form-control"
+                           th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'" placeholder="email@example.com">
+                    <div class="invalid-feedback" th:errors="*{email}"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Mật khẩu</label>
+                    <input type="password" th:field="*{password}" class="form-control"
+                           th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'" placeholder="Tối thiểu 6 ký tự">
+                    <div class="invalid-feedback" th:errors="*{password}"></div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">Nhập lại mật khẩu</label>
+                    <input type="password" th:field="*{confirmPassword}" class="form-control"
+                           th:classappend="${#fields.hasErrors('confirmPassword')} ? 'is-invalid'">
+                    <div class="invalid-feedback" th:errors="*{confirmPassword}"></div>
+                </div>
+                <button class="btn btn-primary w-100 py-2" type="submit">Đăng ký</button>
+            </form>
+
+            <p class="text-center mt-4 mb-0 small">Đã có tài khoản?
+                <a th:href="@{/auth/login}">Đăng nhập</a></p>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

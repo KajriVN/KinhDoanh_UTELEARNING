@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${course.title})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main>
+    <!-- ===== Header tối ===== -->
+    <section class="course-header">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <nav class="small mb-2">
+                        <a th:href="@{/courses}" class="text-info text-decoration-none">Khóa học</a>
+                        <span class="mx-1">/</span>
+                        <a th:if="${course.category != null}" th:href="@{/courses(categoryId=${course.category.id})}"
+                           class="text-info text-decoration-none" th:text="${course.category.name}"></a>
+                    </nav>
+                    <h1 class="h2" th:text="${course.title}">Tên khóa học</h1>
+                    <p class="lead fs-6 mb-3" th:text="${course.shortDescription}">Mô tả ngắn</p>
+                    <div class="d-flex flex-wrap gap-3 small">
+                        <span><i class="bi bi-person-video3 me-1"></i>GV: <b th:text="${course.instructor.fullName}"></b></span>
+                        <span><i class="bi bi-people me-1"></i><b th:text="${studentCount}">0</b> học viên</span>
+                        <span><i class="bi bi-bar-chart me-1"></i><span th:text="${course.level.label}"></span></span>
+                        <span><i class="bi bi-clock me-1"></i><span th:text="${@fmt.duration(course.totalMinutes)}"></span></span>
+                    </div>
+                    <div class="mt-3" th:if="${course.status.name() != 'PUBLISHED'}">
+                        <span class="badge bg-warning text-dark">
+                            Bản xem trước — trạng thái: <span th:text="${course.status.label}"></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container py-4">
+        <div th:replace="~{fragments/layout :: flash}"></div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <!-- ===== Mô tả ===== -->
+                <div class="box mb-4">
+                    <h5 class="fw-bold mb-3">Giới thiệu khóa học</h5>
+                    <div class="lesson-content" th:text="${course.description}">Mô tả</div>
+                </div>
+
+                <!-- ===== Nội dung (chương / bài) ===== -->
+                <div class="box mb-4 curriculum">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">Nội dung khóa học</h5>
+                        <span class="small text-muted">
+                            <span th:text="${course.sections.size()}">0</span> chương ·
+                            <span th:text="${course.totalLessons}">0</span> bài học
+                        </span>
+                    </div>
+                    <div class="accordion" id="curriculum">
+                        <div class="accordion-item" th:each="s, st : ${course.sections}">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                        th:classappend="${!st.first} ? 'collapsed'"
+                                        th:attr="data-bs-target='#sec' + ${s.id}">
+                                    <span th:text="${s.title}">Chương</span>
+                                    <span class="ms-auto me-3 small text-muted fw-normal"
+                                          th:text="${s.lessons.size()} + ' bài'"></span>
+                                </button>
+                            </h2>
+                            <div th:id="'sec' + ${s.id}" class="accordion-collapse collapse"
+                                 th:classappend="${st.first} ? 'show'">
+                                <div class="accordion-body py-1">
+                                    <div class="lesson-row" th:each="l : ${s.lessons}">
+                                        <i class="bi bi-play-circle text-muted"></i>
+                                        <span class="flex-grow-1" th:text="${l.title}">Bài học</span>
+                                        <a th:if="${l.preview and !enrolled}" class="badge bg-success-subtle text-success text-decoration-none"
+                                           th:href="@{/learn/{cid}(cid=${course.id}, lessonId=${l.id})}">Học thử</a>
+                                        <span class="small text-muted" th:text="${l.durationMinutes} + ' phút'"></span>
+                                    </div>
+                                    <div class="text-muted small py-2" th:if="${s.lessons.empty}">Chưa có bài học</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-muted" th:if="${course.sections.empty}">Giảng viên đang cập nhật nội dung.</div>
+                </div>
+
+                <!-- ===== Giảng viên ===== -->
+                <div class="box mb-4">
+                    <h5 class="fw-bold mb-3">Giảng viên</h5>
+                    <div class="d-flex gap-3">
+                        <th:block th:replace="~{fragments/layout :: avatar(${course.instructor}, 64)}"></th:block>
+                        <div>
+                            <div class="fw-bold" th:text="${course.instructor.fullName}">GV</div>
+                            <div class="small text-muted" th:text="${course.instructor.bio}">Giới thiệu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TODO (hand-off): khu vực đánh giá & nhận xét (bảng reviews) -->
+            </div>
+
+            <!-- ===== Hộp mua ===== -->
+            <div class="col-lg-4">
+                <div class="card buy-box">
+                    <div th:replace="~{fragments/layout :: thumb(${course})}"></div>
+                    <div class="card-body p-4">
+                        <div class="fs-3 mb-3" th:classappend="${course.free} ? 'price-free' : 'price'"
+                             th:text="${@fmt.price(course.price)}">0 đ</div>
+
+                        <!-- đã sở hữu -->
+                        <th:block th:if="${enrolled}">
+                            <a class="btn btn-success w-100 py-2 mb-2" th:href="@{/learn/{id}(id=${course.id})}">
+                                <i class="bi bi-play-fill me-1"></i>Vào học ngay</a>
+                            <a class="btn btn-outline-primary w-100" th:href="@{/learn/{id}/chat(id=${course.id})}">
+                                <i class="bi bi-chat-dots me-1"></i>Nhắn tin giảng viên</a>
+                        </th:block>
+
+                        <!-- giảng viên / admin -->
+                        <th:block th:if="${!enrolled and canManage}">
+                            <a class="btn btn-outline-primary w-100 mb-2"
+                               th:href="@{/instructor/courses/{id}/curriculum(id=${course.id})}">
+                                <i class="bi bi-pencil-square me-1"></i>Quản lý nội dung</a>
+                            <a class="btn btn-outline-secondary w-100" th:href="@{/learn/{id}(id=${course.id})}">
+                                <i class="bi bi-eye me-1"></i>Xem như học viên</a>
+                        </th:block>
+
+                        <!-- chưa sở hữu -->
+                        <th:block th:if="${!enrolled and !canManage and course.status.name() == 'PUBLISHED'}">
+                            <form th:if="${course.free}" th:action="@{/courses/{id}/enroll-free(id=${course.id})}" method="post">
+                                <button class="btn btn-success w-100 py-2" type="submit">Đăng ký học miễn phí</button>
+                            </form>
+                            <th:block th:unless="${course.free}">
+                                <a th:if="${inCart}" class="btn btn-outline-primary w-100 py-2" th:href="@{/cart}">
+                                    <i class="bi bi-cart-check me-1"></i>Đã có trong giỏ - Xem giỏ hàng</a>
+                                <th:block th:unless="${inCart}">
+                                    <form th:action="@{/cart/add/{id}(id=${course.id})}" method="post" class="mb-2">
+                                        <input type="hidden" name="buyNow" value="true">
+                                        <button class="btn btn-primary w-100 py-2" type="submit">Mua ngay</button>
+                                    </form>
+                                    <form th:action="@{/cart/add/{id}(id=${course.id})}" method="post">
+                                        <button class="btn btn-outline-primary w-100" type="submit">
+                                            <i class="bi bi-cart-plus me-1"></i>Thêm vào giỏ hàng</button>
+                                    </form>
+                                </th:block>
+                            </th:block>
+                        </th:block>
+
+                        <ul class="list-unstyled small text-muted mt-4 mb-0">
+                            <li class="mb-1"><i class="bi bi-collection-play me-2"></i><span th:text="${course.totalLessons}"></span> bài giảng</li>
+                            <li class="mb-1"><i class="bi bi-infinity me-2"></i>Học trọn đời</li>
+                            <li class="mb-1"><i class="bi bi-phone me-2"></i>Học trên mọi thiết bị</li>
+                            <li><i class="bi bi-chat-dots me-2"></i>Hỏi đáp trực tiếp với giảng viên</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

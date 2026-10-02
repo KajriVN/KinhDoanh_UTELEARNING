@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Nội dung khóa học')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div th:replace="~{fragments/layout :: instructorMenu('courses')}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <a th:href="@{/instructor/courses}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Khóa học của tôi</a>
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-1 mb-3">
+                <div>
+                    <h3 class="page-title mb-0" th:text="${course.title}">Tên khóa</h3>
+                    <span class="small text-muted">
+                        Trạng thái: <b th:text="${course.status.label}"></b> ·
+                        <span th:text="${course.sections.size()}"></span> chương ·
+                        <span th:text="${course.totalLessons}"></span> bài học
+                    </span>
+                </div>
+                <div class="d-flex gap-2">
+                    <a class="btn btn-outline-secondary" th:href="@{/instructor/courses/{id}/edit(id=${course.id})}">
+                        <i class="bi bi-pencil me-1"></i>Sửa thông tin</a>
+                    <form method="post" th:if="${course.status.name() == 'DRAFT' or course.status.name() == 'REJECTED'}"
+                          th:action="@{/instructor/courses/{id}/submit(id=${course.id})}">
+                        <button class="btn btn-success" type="submit"><i class="bi bi-send me-1"></i>Gửi duyệt</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="alert alert-danger" th:if="${course.status.name() == 'REJECTED'}">
+                <b>Admin đã từ chối:</b> <span th:text="${course.rejectReason}"></span>
+            </div>
+
+            <!-- ===== Từng chương ===== -->
+            <div class="box mb-3" th:each="s : ${course.sections}">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                    <!-- đổi tên chương -->
+                    <form class="d-flex gap-2 flex-grow-1" method="post" style="max-width: 520px"
+                          th:action="@{/instructor/sections/{id}/rename(id=${s.id})}">
+                        <span class="badge bg-primary align-self-center" th:text="'Chương ' + ${s.position}"></span>
+                        <input class="form-control form-control-sm fw-semibold" name="title" th:value="${s.title}" required>
+                        <button class="btn btn-sm btn-outline-secondary" type="submit" title="Lưu tên"><i class="bi bi-check-lg"></i></button>
+                    </form>
+                    <div class="d-flex gap-2">
+                        <a class="btn btn-sm btn-primary" th:href="@{/instructor/sections/{id}/lessons/new(id=${s.id})}">
+                            <i class="bi bi-plus-lg"></i> Thêm bài học</a>
+                        <form method="post" th:action="@{/instructor/sections/{id}/delete(id=${s.id})}"
+                              onsubmit="return confirm('Xóa chương này và toàn bộ bài học bên trong?')">
+                            <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="lesson-row" th:each="l : ${s.lessons}">
+                    <span class="text-muted small" th:text="${s.position} + '.' + ${l.position}"></span>
+                    <i th:class="${l.videoUrl != null} ? 'bi bi-camera-video text-primary' : 'bi bi-file-text text-muted'"></i>
+                    <span class="flex-grow-1" th:text="${l.title}">Bài</span>
+                    <span th:if="${l.preview}" class="badge bg-success-subtle text-success">Học thử</span>
+                    <span class="small text-muted" th:text="${l.durationMinutes} + ' phút'"></span>
+                    <a class="btn btn-sm btn-outline-secondary" th:href="@{/instructor/lessons/{id}/edit(id=${l.id})}"><i class="bi bi-pencil"></i></a>
+                    <form method="post" th:action="@{/instructor/lessons/{id}/delete(id=${l.id})}"
+                          onsubmit="return confirm('Xóa bài học này?')">
+                        <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i></button>
+                    </form>
+                </div>
+                <div class="text-muted small py-2" th:if="${s.lessons.empty}">Chương chưa có bài học.</div>
+            </div>
+
+            <!-- ===== Thêm chương ===== -->
+            <form class="box d-flex gap-2" method="post" th:action="@{/instructor/courses/{id}/sections(id=${course.id})}">
+                <input class="form-control" name="title" placeholder="Tên chương mới, vd: Chương 1: Giới thiệu" required>
+                <button class="btn btn-primary text-nowrap" type="submit"><i class="bi bi-plus-lg me-1"></i>Thêm chương</button>
+            </form>
+            <!-- TODO (hand-off): kéo thả sắp xếp lại thứ tự chương/bài -->
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

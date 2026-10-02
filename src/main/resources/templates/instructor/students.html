@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Học viên của khóa')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4">
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div th:replace="~{fragments/layout :: instructorMenu('courses')}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <a th:href="@{/instructor/courses}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Khóa học của tôi</a>
+            <h3 class="page-title mt-1">Học viên</h3>
+            <p class="text-muted" th:text="${course.title} + ' · ' + ${enrollments.size()} + ' học viên'"></p>
+
+            <div class="box p-0 table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Học viên</th>
+                        <th>Ngày đăng ký</th>
+                        <th style="width: 220px">Tiến độ</th>
+                        <th class="text-end pe-3"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="e : ${enrollments}">
+                        <td class="ps-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <th:block th:replace="~{fragments/layout :: avatar(${e.user}, 36)}"></th:block>
+                                <div>
+                                    <div class="fw-semibold" th:text="${e.user.fullName}"></div>
+                                    <div class="small text-muted" th:text="${e.user.email}"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td th:text="${@fmt.date(e.enrolledAt)}"></td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress flex-grow-1" style="height: 8px">
+                                    <div class="progress-bar" th:classappend="${e.progressPercent == 100} ? 'bg-success'"
+                                         th:style="|width: ${e.progressPercent}%|"></div>
+                                </div>
+                                <small th:text="${e.progressPercent} + '%'"></small>
+                            </div>
+                        </td>
+                        <td class="text-end pe-3">
+                            <a class="btn btn-sm btn-outline-primary"
+                               th:href="@{/instructor/chats/{c}/{s}(c=${course.id}, s=${e.user.id})}"><i class="bi bi-chat-dots"></i> Nhắn tin</a>
+                        </td>
+                    </tr>
+                    <tr th:if="${enrollments.empty}">
+                        <td colspan="4" class="text-center text-muted py-4">Chưa có học viên đăng ký.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

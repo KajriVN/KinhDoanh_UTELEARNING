@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Tin nhắn học viên')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4">
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div th:replace="~{fragments/layout :: instructorMenu('chats')}"></div>
+        </div>
+        <div class="col-lg-9">
+            <h3 class="page-title mb-3">Tin nhắn học viên</h3>
+
+            <div class="box p-0">
+                <a th:each="m : ${conversations}"
+                   th:href="@{/instructor/chats/{c}/{s}(c=${m.course.id}, s=${m.student.id})}"
+                   class="d-flex gap-3 p-3 border-bottom text-decoration-none text-dark align-items-center">
+                    <th:block th:replace="~{fragments/layout :: avatar(${m.student}, 44)}"></th:block>
+                    <div class="flex-grow-1 overflow-hidden">
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-semibold" th:text="${m.student.fullName}">Học viên</span>
+                            <small class="text-muted" th:text="${@fmt.dateTime(m.sentAt)}"></small>
+                        </div>
+                        <div class="small text-primary" th:text="${m.course.title}">Khóa học</div>
+                        <div class="small text-truncate"
+                             th:classappend="${!m.read and m.sender.id != currentUser.id} ? 'fw-bold' : 'text-muted'">
+                            <span th:if="${m.sender.id == currentUser.id}">Bạn: </span>
+                            <span th:text="${m.content}">Tin nhắn</span>
+                        </div>
+                    </div>
+                    <span th:if="${!m.read and m.sender.id != currentUser.id}" class="badge bg-danger">Mới</span>
+                </a>
+                <div class="text-center text-muted py-5" th:if="${conversations.empty}">
+                    <i class="bi bi-chat-square-dots fs-1 d-block mb-2"></i>Chưa có học viên nào nhắn tin.
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Chi tiết đơn hàng')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4" style="max-width: 820px">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <div class="box">
+        <div class="text-center mb-4" th:if="${order.status.name() == 'PAID'}">
+            <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem"></i>
+            <h4 class="fw-bold mt-2">Thanh toán thành công</h4>
+            <p class="text-muted mb-0">Cảm ơn bạn đã mua khóa học tại UTELearn</p>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">Đơn hàng <span th:text="${order.orderCode}"></span></h5>
+            <span class="badge fs-6"
+                  th:classappend="${order.status.name() == 'PAID'} ? 'bg-success' : (${order.status.name() == 'PENDING'} ? 'bg-warning text-dark' : 'bg-secondary')"
+                  th:text="${order.status.label}"></span>
+        </div>
+
+        <div class="row small text-muted mb-3">
+            <div class="col-sm-6">Ngày tạo: <span th:text="${@fmt.dateTime(order.createdAt)}"></span></div>
+            <div class="col-sm-6" th:if="${order.paidAt != null}">Thanh toán lúc: <span th:text="${@fmt.dateTime(order.paidAt)}"></span></div>
+            <div class="col-sm-6">Phương thức: <span th:text="${order.paymentMethod}"></span></div>
+        </div>
+
+        <table class="table align-middle">
+            <thead class="table-light">
+            <tr><th>Khóa học</th><th class="text-end">Giá</th><th></th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${order.items}">
+                <td th:text="${item.course.title}"></td>
+                <td class="text-end" th:text="${@fmt.money(item.price)}"></td>
+                <td class="text-end">
+                    <a th:if="${order.status.name() == 'PAID'}" class="btn btn-sm btn-success"
+                       th:href="@{/learn/{id}(id=${item.course.id})}">Vào học</a>
+                </td>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr><td>Tạm tính</td><td class="text-end" th:text="${@fmt.money(order.totalAmount)}"></td><td></td></tr>
+            <tr><td>Giảm giá</td><td class="text-end" th:text="'- ' + ${@fmt.money(order.discountAmount)}"></td><td></td></tr>
+            <tr class="fw-bold fs-5"><td>Tổng cộng</td><td class="text-end price" th:text="${@fmt.money(order.finalAmount)}"></td><td></td></tr>
+            </tfoot>
+        </table>
+
+        <div class="d-flex gap-2 justify-content-end">
+            <a class="btn btn-outline-secondary" th:href="@{/orders}">Danh sách đơn hàng</a>
+            <a th:if="${order.status.name() == 'PENDING'}" class="btn btn-primary"
+               th:href="@{/payment/{c}(c=${order.orderCode})}">Thanh toán ngay</a>
+            <a th:if="${order.status.name() == 'PAID'}" class="btn btn-primary" th:href="@{/my-courses}">Khóa học của tôi</a>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

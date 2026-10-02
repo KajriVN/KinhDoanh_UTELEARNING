@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Trang chủ')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main>
+    <!-- ===== Banner ===== -->
+    <section class="hero">
+        <div class="container">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-7">
+                    <span class="badge bg-white text-primary mb-3 px-3 py-2">Học mọi lúc · Mọi nơi</span>
+                    <h1 class="display-5 mb-3">Nâng cấp kỹ năng cùng <br>các khóa học chất lượng</h1>
+                    <p class="lead opacity-75 mb-4">Tìm khóa học phù hợp, thanh toán nhanh chóng, theo dõi tiến độ
+                        và trao đổi trực tiếp với giảng viên.</p>
+                    <form class="search-box d-flex" th:action="@{/courses}" method="get">
+                        <input class="form-control rounded-pill ps-3" name="keyword"
+                               placeholder="Bạn muốn học gì? Ví dụ: Spring Boot, React...">
+                        <button class="btn btn-primary rounded-pill px-4 text-nowrap" type="submit">Tìm kiếm</button>
+                    </form>
+                </div>
+                <div class="col-lg-5">
+                    <div class="row text-center g-3">
+                        <div class="col-4">
+                            <div class="hero-stat">50+</div>
+                            <div class="small opacity-75">Bài giảng video</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="hero-stat">24/7</div>
+                            <div class="small opacity-75">Học mọi lúc</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="hero-stat">1-1</div>
+                            <div class="small opacity-75">Chat với giảng viên</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+        <div class="mt-4">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+        </div>
+
+        <!-- ===== Danh mục ===== -->
+        <section class="mt-5">
+            <h4 class="section-title mb-3">Danh mục nổi bật</h4>
+            <div class="row g-3">
+                <div class="col-6 col-md-4 col-lg-2" th:each="cat : ${categories}">
+                    <a class="category-tile" th:href="@{/courses(categoryId=${cat.id})}">
+                        <i th:class="|bi ${cat.icon}|"></i>
+                        <div class="fw-semibold mt-2 small" th:text="${cat.name}">Danh mục</div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== Khóa học mới ===== -->
+        <section class="mt-5">
+            <div class="d-flex justify-content-between align-items-end mb-3">
+                <h4 class="section-title mb-0">Khóa học mới nhất</h4>
+                <a th:href="@{/courses}" class="text-decoration-none">Xem tất cả <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div class="row g-4">
+                <div class="col-sm-6 col-lg-3" th:each="c : ${latestCourses}">
+                    <div th:replace="~{fragments/layout :: courseCard(${c})}"></div>
+                </div>
+                <div class="col-12 text-muted" th:if="${#lists.isEmpty(latestCourses)}">Chưa có khóa học nào.</div>
+            </div>
+        </section>
+
+        <!-- ===== Lý do chọn ===== -->
+        <section class="mt-5">
+            <div class="box">
+                <div class="row g-4 text-center text-md-start">
+                    <div class="col-md-3">
+                        <span class="feature-icon mb-2"><i class="bi bi-credit-card"></i></span>
+                        <h6 class="fw-bold mt-2">Thanh toán linh hoạt</h6>
+                        <p class="small text-muted mb-0">Thêm nhiều khóa vào giỏ và thanh toán một lần.</p>
+                    </div>
+                    <div class="col-md-3">
+                        <span class="feature-icon mb-2"><i class="bi bi-graph-up-arrow"></i></span>
+                        <h6 class="fw-bold mt-2">Theo dõi tiến độ</h6>
+                        <p class="small text-muted mb-0">Biết rõ mình đã học bao nhiêu % mỗi khóa.</p>
+                    </div>
+                    <div class="col-md-3">
+                        <span class="feature-icon mb-2"><i class="bi bi-chat-dots"></i></span>
+                        <h6 class="fw-bold mt-2">Hỏi đáp realtime</h6>
+                        <p class="small text-muted mb-0">Nhắn tin trực tiếp với giảng viên qua WebSocket.</p>
+                    </div>
+                    <div class="col-md-3">
+                        <span class="feature-icon mb-2"><i class="bi bi-cloud-arrow-up"></i></span>
+                        <h6 class="fw-bold mt-2">Video trên Cloud</h6>
+                        <p class="small text-muted mb-0">Bài giảng lưu trên Cloudinary, xem mượt mọi thiết bị.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
