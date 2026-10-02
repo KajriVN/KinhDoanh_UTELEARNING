@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "utelearn-h2",
+      "runtimeExecutable": "java",
+      "runtimeArgs": ["-jar", "target/utelearn-0.0.1-SNAPSHOT.jar", "--spring.profiles.active=h2", "--server.port=8088"],
+      "port": 8088
+    }
+  ]
+}
