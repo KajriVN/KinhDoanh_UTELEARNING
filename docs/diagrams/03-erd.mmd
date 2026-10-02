@@ -1,0 +1,137 @@
+erDiagram
+    users ||--o{ courses : "giảng dạy"
+    categories |o--o{ courses : "phân loại"
+    courses ||--o{ sections : "gồm"
+    sections ||--o{ lessons : "gồm"
+    users ||--o{ enrollments : "ghi danh"
+    courses ||--o{ enrollments : "có"
+    enrollments ||--o{ lesson_progress : "tiến độ"
+    lessons ||--o{ lesson_progress : "đã học"
+    users ||--o{ cart_items : "giỏ hàng"
+    courses ||--o{ cart_items : "trong giỏ"
+    users ||--o{ orders : "đặt"
+    coupons |o--o{ orders : "áp dụng"
+    orders ||--|{ order_items : "gồm"
+    courses ||--o{ order_items : "được mua"
+    courses ||--o{ chat_messages : "thuộc"
+    users ||--o{ chat_messages : "gửi / nhận"
+    courses ||--o{ assignments : "giao"
+    lessons |o--o{ assignments : "gắn với"
+    assignments ||--o{ submissions : "nhận"
+    users ||--o{ submissions : "nộp"
+    courses ||--o{ reviews : "được đánh giá"
+    users ||--o{ reviews : "viết"
+    users ||--o{ notifications : "nhận"
+    users ||--o{ password_reset_tokens : "yêu cầu"
+
+    users {
+        bigint id PK
+        varchar full_name
+        varchar email UK
+        varchar password
+        enum role
+        bit enabled
+    }
+    categories {
+        bigint id PK
+        varchar name UK
+        varchar icon
+    }
+    courses {
+        bigint id PK
+        varchar title
+        decimal price
+        enum level
+        enum status
+        bigint category_id FK
+        bigint instructor_id FK
+    }
+    sections {
+        bigint id PK
+        varchar title
+        int position
+        bigint course_id FK
+    }
+    lessons {
+        bigint id PK
+        varchar title
+        varchar video_url
+        int duration_minutes
+        bit preview
+        bigint section_id FK
+    }
+    enrollments {
+        bigint id PK
+        bigint user_id FK
+        bigint course_id FK
+        int progress_percent
+        datetime completed_at
+    }
+    lesson_progress {
+        bigint id PK
+        bigint enrollment_id FK
+        bigint lesson_id FK
+    }
+    cart_items {
+        bigint id PK
+        bigint user_id FK
+        bigint course_id FK
+    }
+    orders {
+        bigint id PK
+        varchar order_code UK
+        decimal final_amount
+        enum status
+        enum payment_method
+        bigint user_id FK
+        bigint coupon_id FK
+    }
+    order_items {
+        bigint id PK
+        bigint order_id FK
+        bigint course_id FK
+        decimal price
+    }
+    chat_messages {
+        bigint id PK
+        bigint course_id FK
+        bigint student_id FK
+        bigint sender_id FK
+        varchar content
+    }
+    coupons {
+        bigint id PK
+        varchar code UK
+        int discount_percent
+    }
+    assignments {
+        bigint id PK
+        bigint course_id FK
+        bigint lesson_id FK
+        varchar title
+        datetime due_date
+    }
+    submissions {
+        bigint id PK
+        bigint assignment_id FK
+        bigint student_id FK
+        varchar file_url
+        float score
+    }
+    reviews {
+        bigint id PK
+        bigint course_id FK
+        bigint user_id FK
+        int rating
+    }
+    notifications {
+        bigint id PK
+        bigint user_id FK
+        varchar title
+        bit is_read
+    }
+    password_reset_tokens {
+        bigint id PK
+        bigint user_id FK
+        varchar token UK
+    }

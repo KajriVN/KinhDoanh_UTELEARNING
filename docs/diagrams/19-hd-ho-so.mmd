@@ -1,0 +1,14 @@
+flowchart TD
+    start(( )) --> A(["Người dùng mở /profile"])
+    A --> B{"Chọn chức năng"}
+    B -- "Cập nhật hồ sơ" --> C(["Sửa họ tên, SĐT, giới thiệu, chọn ảnh đại diện"])
+    C --> D{"Hợp lệ? (SĐT 9-11 số, ảnh jpg/png/gif/webp)"}
+    D -- "Không" --> D1(["Hiện lỗi"]) --> C
+    D -- "Có" --> E(["Upload ảnh lên Cloudinary → lưu avatar_url"])
+    E --> F(["Lưu user, báo thành công"])
+    B -- "Đổi mật khẩu" --> G(["Nhập mật khẩu hiện tại, mật khẩu mới, nhập lại"])
+    G --> H{"Mật khẩu hiện tại đúng<br/>và mật khẩu mới khớp?"}
+    H -- "Không" --> H1(["Báo lỗi"]) --> G
+    H -- "Có" --> I(["Mã hóa BCrypt, lưu mật khẩu mới"])
+    F --> stop((( )))
+    I --> stop

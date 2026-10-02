@@ -1,0 +1,13 @@
+flowchart TD
+    start(( )) --> A(["Người dùng mở /auth/register"])
+    A --> B(["Nhập họ tên, email, mật khẩu, nhập lại mật khẩu"])
+    B --> C(["Bấm Đăng ký → POST /auth/register"])
+    C --> D{"Dữ liệu hợp lệ?<br/>(@Valid RegisterForm)"}
+    D -- "Không" --> E(["Hiện lỗi dưới từng ô nhập"]) --> B
+    D -- "Có" --> F{"Mật khẩu nhập lại khớp?"}
+    F -- "Không" --> G(["Báo 'Mật khẩu nhập lại không khớp'"]) --> B
+    F -- "Có" --> H{"Email đã tồn tại?"}
+    H -- "Có" --> I(["Báo 'Email này đã được đăng ký'"]) --> B
+    H -- "Không" --> J(["Mã hóa mật khẩu BCrypt<br/>Lưu user với role = STUDENT"])
+    J --> K(["Chuyển về /auth/login + thông báo thành công"])
+    K --> stop((( )))

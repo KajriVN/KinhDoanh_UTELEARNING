@@ -1,0 +1,24 @@
+const { launch } = require('./cdp');
+const B = 'http://localhost:8089';
+(async () => {
+  const cdp = await launch();
+  const ctx = await cdp.newContext();
+  const p = await cdp.newPage(ctx);
+  await p.goto(B + '/auth/login', 500);
+  console.log('cookies after login page:', await p.eval('document.cookie'));
+  console.log('csrf in form:', await p.eval(`document.querySelector('input[name=_csrf]').value`));
+  await p.evalNav(`(() => { document.querySelector('input[name=email]').value='cuong.le@gmail.com';
+    document.querySelector('input[name=password]').value='123456'; document.querySelector('form[action="/auth/login"]').submit(); })()`);
+  console.log('url after login:', await p.eval('location.href'));
+  console.log('cookies after login:', await p.eval('document.cookie'));
+  await p.goto(B + '/cart', 500);
+  console.log('cookies at cart:', await p.eval('document.cookie'));
+  console.log('checkout form csrf:', await p.eval(`document.querySelector('form[action="/checkout"] input[name=_csrf]')?.value`));
+  const r = await p.eval(`(async () => { const f = document.querySelector('form[action="/checkout"]');
+    const res = await fetch('/checkout', { method: 'POST', body: new URLSearchParams(new FormData(f)), redirect: 'manual' });
+    return res.status + ' ' + res.type; })()`);
+  console.log('fetch POST /checkout:', r);
+  const all = await cdp.send('Storage.getCookies', { browserContextId: ctx });
+  console.log(all.cookies.map(c => `${c.name} path=${c.path} sameSite=${c.sameSite} httpOnly=${c.httpOnly}`).join('\n'));
+  await cdp.close();
+})();

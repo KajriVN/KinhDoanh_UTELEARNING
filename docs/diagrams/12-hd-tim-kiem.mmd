@@ -1,0 +1,17 @@
+flowchart TD
+    start(( )) --> A(["Người dùng nhập từ khóa / chọn danh mục, học phí, sắp xếp"])
+    A --> B(["GET /courses?keyword=&categoryId=&price=&sort=&page="])
+    B --> C(["CourseService.searchPublished()"])
+    C --> D{"price = free / paid?"}
+    D -- "free" --> E1(["maxPrice = 0"])
+    D -- "paid" --> E2(["minPrice = 1"])
+    D -- "trống" --> E3(["không lọc giá"])
+    E1 --> F
+    E2 --> F
+    E3 --> F(["Tạo Sort theo sort (mới nhất / giá tăng / giá giảm)<br/>PageRequest 9 khóa/trang"])
+    F --> G(["CourseRepository.search(): chỉ lấy status = PUBLISHED,<br/>tham số nào null thì bỏ qua điều kiện"])
+    G --> H{"Có kết quả?"}
+    H -- "Có" --> I(["Hiển thị lưới thẻ khóa học + phân trang<br/>(giữ nguyên bộ lọc trên URL)"])
+    H -- "Không" --> J(["Hiện 'Không tìm thấy khóa học phù hợp'"])
+    I --> stop((( )))
+    J --> stop

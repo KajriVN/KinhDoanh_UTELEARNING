@@ -1,0 +1,15 @@
+flowchart TD
+    start(( )) --> A(["Admin mở /admin/categories"])
+    A --> B{"Thao tác"}
+    B -- "Thêm / sửa" --> C(["Nhập tên, mô tả, icon → POST /admin/categories/save"])
+    C --> D{"Tên trống hoặc trùng?"}
+    D -- "Có" --> D1(["Báo lỗi"])
+    D -- "Không" --> E(["Lưu danh mục"])
+    B -- "Xóa" --> F(["POST /admin/categories/{id}/delete"])
+    F --> G{"Danh mục còn khóa học?"}
+    G -- "Có" --> G1(["Báo 'Danh mục đang có khóa học'"])
+    G -- "Không" --> H(["Xóa danh mục"])
+    D1 --> stop((( )))
+    E --> stop
+    G1 --> stop
+    H --> stop

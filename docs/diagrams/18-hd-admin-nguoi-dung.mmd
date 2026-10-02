@@ -1,0 +1,13 @@
+flowchart TD
+    start(( )) --> A(["Admin mở /admin/users"])
+    A --> B(["Tìm theo tên/email, lọc theo vai trò, phân trang"])
+    B --> C{"Thao tác?"}
+    C -- "Khóa / mở khóa" --> D(["POST /admin/users/{id}/toggle"])
+    C -- "Đổi vai trò" --> E(["Chọn vai trò → POST /admin/users/{id}/role"])
+    D --> F{"Có phải chính mình?"}
+    E --> F
+    F -- "Có" --> F1(["Báo lỗi 'Không thể tự khóa / tự đổi vai trò'"])
+    F -- "Không" --> G(["Cập nhật enabled hoặc role"])
+    G --> H(["User bị khóa: JwtAuthFilter bỏ qua token<br/>→ coi như chưa đăng nhập, không login lại được"])
+    F1 --> stop((( )))
+    H --> stop

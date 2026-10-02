@@ -1,0 +1,37 @@
+flowchart LR
+    G(["👤 Khách"])
+    S(["🎓 Học viên"])
+    I(["👨‍🏫 Giảng viên"])
+    A(["🛡️ Admin"])
+
+    subgraph SYS["Hệ thống UTELearn"]
+        U1["Xem, tìm kiếm, lọc khóa học"]
+        U2["Đăng ký / đăng nhập"]
+        U3["Giỏ hàng & thanh toán"]
+        U4["Học bài, theo dõi tiến độ"]
+        U5["Chat với giảng viên"]
+        U6["Quản lý hồ sơ"]
+        U7["Tạo khóa học, chương, bài học"]
+        U8["Gửi duyệt, xem học viên"]
+        U9["Trả lời tin nhắn học viên"]
+        U10["Quản lý người dùng"]
+        U11["Quản lý danh mục"]
+        U12["Duyệt / từ chối khóa học"]
+        U13["Xem thống kê"]
+    end
+
+    G --> U1
+    G --> U2
+    S --> U1
+    S --> U3
+    S --> U4
+    S --> U5
+    S --> U6
+    I --> U7
+    I --> U8
+    I --> U9
+    I --> U6
+    A --> U10
+    A --> U11
+    A --> U12
+    A --> U13

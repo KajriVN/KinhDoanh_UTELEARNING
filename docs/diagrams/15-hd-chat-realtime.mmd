@@ -1,0 +1,29 @@
+sequenceDiagram
+    autonumber
+    actor HV as Học viên
+    participant JS1 as chat.js (Học viên)
+    participant WS as Spring WebSocket /ws
+    participant CC as ChatController
+    participant CS as ChatService
+    participant DB as MySQL
+    participant JS2 as chat.js (Giảng viên)
+    actor GV as Giảng viên
+
+    HV->>JS1: Mở /learn/{courseId}/chat
+    JS1->>WS: CONNECT (SockJS, cookie JWT)
+    GV->>JS2: Mở /instructor/chats/{courseId}/{studentId}
+    JS2->>WS: CONNECT
+    JS1->>WS: SUBSCRIBE /user/queue/messages
+    JS2->>WS: SUBSCRIBE /user/queue/messages
+    HV->>JS1: Gõ tin nhắn, bấm Gửi
+    JS1->>WS: SEND /app/chat.send {courseId, studentId, content}
+    WS->>CC: @MessageMapping("/chat.send") + Principal
+    CC->>CS: sendMessage(email, courseId, studentId, content)
+    CS->>CS: Kiểm tra: học viên đã ghi danh,<br/>người gửi là học viên đó hoặc GV của khóa
+    CS->>DB: INSERT chat_messages
+    CC->>WS: convertAndSendToUser(email HV, /queue/messages)
+    CC->>WS: convertAndSendToUser(email GV, /queue/messages)
+    WS-->>JS1: MESSAGE (JSON)
+    WS-->>JS2: MESSAGE (JSON)
+    JS1-->>HV: Hiện bong bóng tin nhắn
+    JS2-->>GV: Hiện bong bóng tin nhắn

@@ -1,0 +1,18 @@
+flowchart TD
+    start(( )) --> A(["Học viên xem chi tiết khóa học"])
+    A --> B{"Khóa miễn phí?"}
+    B -- "Có" --> B1(["Bấm 'Đăng ký học miễn phí'<br/>POST /courses/{id}/enroll-free"]) --> Z(["Tạo Enrollment"])
+    B -- "Không" --> C(["Bấm 'Thêm vào giỏ' / 'Mua ngay'<br/>POST /cart/add/{id}"])
+    C --> D{"Kiểm tra: đã mua? đã có trong giỏ?<br/>là GV của khóa?"}
+    D -- "Vi phạm" --> D1(["Báo lỗi trên trang chi tiết"]) --> stop1((( )))
+    D -- "OK" --> E(["Lưu CartItem"])
+    E --> F(["Mở giỏ hàng /cart → bấm 'Tiến hành thanh toán'"])
+    F --> G(["POST /checkout: tạo Order PENDING<br/>+ OrderItem lưu giá lúc mua"])
+    G --> H(["Trang cổng thanh toán giả lập /payment/{code}"])
+    H --> I{"Người dùng chọn?"}
+    I -- "Hủy" --> I1(["Order = CANCELLED"]) --> stop2((( )))
+    I -- "Xác nhận" --> J(["OrderService.markPaid():<br/>Order = PAID, paidAt = now"])
+    J --> K(["Với mỗi OrderItem: tạo Enrollment<br/>+ xóa khỏi giỏ hàng"])
+    K --> Z
+    Z --> L(["Khóa học xuất hiện trong 'Khóa học của tôi'"])
+    L --> stop3((( )))

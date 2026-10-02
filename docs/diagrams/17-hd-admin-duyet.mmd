@@ -1,0 +1,13 @@
+flowchart TD
+    start(( )) --> A(["Admin mở /admin/courses?status=PENDING"])
+    A --> B(["Xem chi tiết khóa học (bản xem trước)"])
+    B --> C{"Nội dung đạt yêu cầu?"}
+    C -- "Đạt" --> D(["POST /admin/courses/{id}/approve"])
+    D --> E(["status = PUBLISHED<br/>→ khóa hiện ở trang chủ, tìm kiếm"])
+    C -- "Không đạt" --> F(["Nhập lý do → POST /admin/courses/{id}/reject"])
+    F --> G{"Đã nhập lý do?"}
+    G -- "Không" --> G1(["Báo lỗi"]) --> F
+    G -- "Có" --> H(["status = REJECTED + lưu reject_reason"])
+    H --> I(["Giảng viên thấy lý do, sửa khóa<br/>(tự về DRAFT) rồi gửi duyệt lại"])
+    E --> stop((( )))
+    I --> stop

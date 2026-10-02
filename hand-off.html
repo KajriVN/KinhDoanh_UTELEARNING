@@ -83,6 +83,8 @@
   <a href="#tai-lieu">10. Tài liệu nộp (.docx, prompt)</a>
   <a href="#test">11. Đã test những gì</a>
   <a href="#thu-tu">12. Thứ tự làm tiếp đề xuất</a>
+  <a href="#loi">13. Nhật ký lỗi đã gặp</a>
+  <a href="#prompt">14. Nhật ký prompt AI</a>
 </nav>
 
 <main>
@@ -117,7 +119,9 @@ feat: JWT security, upload Cloudinary va cac service nghiep vu
 feat: controller cho khach, hoc vien, giang vien, admin va chat WebSocket
 feat: giao dien Thymeleaf + Bootstrap 5 cho toan bo chuc nang da lam
 feat: them file database/utelearn.sql (17 bang + du lieu mau)
-docs: ...  (hand-off, README, báo cáo)</code></pre>
+docs: them hand-off.html va huong dan setup trong README
+fix: CSRF token bi doi lien tuc khi dang nhap bang JWT
+docs: so do, anh code, anh giao dien, cong cu sinh tai lieu</code></pre>
   Quy ước commit: <code>feat:</code> / <code>fix:</code> / <code>docs:</code> + mô tả tiếng Việt không dấu. Mỗi chức năng 1–2 commit. Chưa push lên GitHub.
 </div>
 
@@ -394,7 +398,7 @@ java -jar target/utelearn-0.0.1-SNAPSHOT.jar --spring.profiles.active=h2</code><
 <h2 id="luu-y">9. Lưu ý / nợ kỹ thuật</h2>
 <div class="card danger"><b>Chưa chạy thử trên MySQL thật</b> (máy dev không có MySQL server). File <code>utelearn.sql</code> và app chỉ được kiểm tra trên H2 chế độ MySQL. Việc đầu tiên nên làm: import SQL vào MySQL 8 và chạy smoke test lại.</div>
 <ul>
-  <li><b>CSRF</b>: bật, token lưu cookie <code>XSRF-TOKEN</code> (<code>CookieCsrfTokenRepository</code>), bỏ qua <code>/ws/**</code> (SockJS). Nếu viết AJAX POST phải gửi header <code>X-XSRF-TOKEN</code>.</li>
+  <li><b>CSRF</b>: bật, token lưu cookie <code>XSRF-TOKEN</code> (<code>CookieCsrfTokenRepository</code>), bỏ qua <code>/ws/**</code> (SockJS). <b>Không xóa dòng <code>sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy())</code></b> trong <code>SecurityConfig</code> — xóa là lỗi #1 mục 13 quay lại. Nếu viết AJAX POST phải gửi header <code>X-XSRF-TOKEN</code>.</li>
   <li><b>JWT</b>: hết hạn 1 ngày, không có refresh token; đăng xuất chỉ xóa cookie (token cũ vẫn hợp lệ đến khi hết hạn). Secret mặc định nằm trong properties — khi deploy phải đặt <code>JWT_SECRET</code>.</li>
   <li><code>JwtAuthFilter</code> load user từ DB mỗi request để tài khoản bị khóa bị đá ra ngay — chấp nhận được với đồ án.</li>
   <li><code>GlobalModelAdvice</code> chạy 2 query (user + đếm giỏ) cho mọi request kể cả POST.</li>
@@ -414,11 +418,54 @@ java -jar target/utelearn-0.0.1-SNAPSHOT.jar --spring.profiles.active=h2</code><
 <tr><th>Hạng mục</th><th>Trạng thái</th><th>Vị trí</th></tr>
 <tr><td>Source code</td><td><span class="b part">50%</span></td><td><code>src/</code></td></tr>
 <tr><td>Database .sql</td><td><span class="b done">XONG</span> (đủ 17 bảng)</td><td><code>database/utelearn.sql</code></td></tr>
-<tr><td>Báo cáo .docx (kiến trúc, ERD, sơ đồ hoạt động, giải thích code, giao diện, setup, prompt) cho phần đã làm</td><td><span class="b part">phần đã làm</span></td><td><code>docs/BaoCao_UTELearn.docx</code> (+ hình trong <code>docs/images/</code>, mã nguồn sơ đồ Mermaid trong <code>docs/diagrams/</code>)</td></tr>
-<tr><td>Datasheet prompt AI</td><td><span class="b part">đang cập nhật</span></td><td><code>docs/Datasheet_AI_Prompts.xlsx</code> — mỗi chức năng làm thêm hãy ghi thêm dòng prompt</td></tr>
-<tr><td>Hướng dẫn setup</td><td><span class="b done">XONG</span></td><td><code>README.md</code> + 1 chương trong docx</td></tr>
+<tr><td>Hình kiến trúc + ERD + use case</td><td><span class="b done">XONG</span></td><td><code>docs/images/diagrams/01..04-*.png</code> (nguồn Mermaid: <code>docs/diagrams/*.mmd</code>)</td></tr>
+<tr><td>Sơ đồ hoạt động từng chức năng đã làm (11 hình)</td><td><span class="b done">XONG</span></td><td><code>docs/images/diagrams/10..20-hd-*.png</code></td></tr>
+<tr><td>Hình diễn giải source code (20 hình, có đánh số + chú thích)</td><td><span class="b done">XONG</span></td><td><code>docs/images/code/code-01..20-*.png</code></td></tr>
+<tr><td>Hình diễn giải giao diện (31 ảnh chụp thật từ app)</td><td><span class="b done">XONG</span></td><td><code>docs/images/ui/ui-01..31-*.png</code></td></tr>
+<tr><td>Hướng dẫn setup</td><td><span class="b done">XONG</span></td><td><code>README.md</code> (copy vào docx)</td></tr>
+<tr><td>Danh sách prompt AI</td><td><span class="b part">có nội dung</span></td><td>Mục 14 bên dưới — cần chép sang docx + datasheet (.xlsx)</td></tr>
+<tr><td><b>File báo cáo .docx</b></td><td><span class="b todo">CHƯA GHÉP</span></td><td>Chưa tạo <code>docs/BaoCao_UTELearn.docx</code> — đã có đủ hình, chỉ cần ghép (xem dàn ý dưới)</td></tr>
+<tr><td>Datasheet prompt AI (.xlsx)</td><td><span class="b todo">CHƯA</span></td><td>Cột gợi ý: STT · Ngày · Thành viên · Công cụ AI · Mục đích · Prompt · Kết quả / file sinh ra · Mức độ chỉnh sửa</td></tr>
 </table></div>
-<p>Khi làm chức năng mới: thêm sơ đồ hoạt động (Mermaid → PNG), ảnh chụp giao diện, đoạn giải thích code vào docx, và ghi prompt vào datasheet.</p>
+
+<h3>Dàn ý docx đề xuất (ghép từ hình đã có)</h3>
+<ol>
+  <li><b>Giới thiệu đề tài</b>: mục tiêu, vai trò người dùng, công nghệ, bảng phân công thành viên (nhóm tự điền).</li>
+  <li><b>Kiến trúc ứng dụng</b>: <code>01-kien-truc-tong-quan.png</code>, <code>02-kien-truc-phan-lop.png</code>, <code>04-use-case.png</code>, cây thư mục (mục 3 file này), cơ chế JWT (<code>11-hd-dang-nhap-jwt.png</code>, <code>code-01</code>, <code>code-02</code>).</li>
+  <li><b>Cơ sở dữ liệu</b>: <code>03-erd.png</code> + bảng mô tả 17 bảng (mục 6).</li>
+  <li><b>Từng chức năng</b> = mô tả → sơ đồ hoạt động → hình code → hình giao diện:
+    <ul>
+      <li>Đăng ký: <code>10-hd-dang-ky</code> · <code>code-04</code> · <code>ui-06</code>, <code>ui-07</code></li>
+      <li>Đăng nhập JWT: <code>11-hd-dang-nhap-jwt</code> · <code>code-01/02/03</code> · <code>ui-05</code>, <code>ui-17</code> (403)</li>
+      <li>Tìm kiếm/lọc: <code>12-hd-tim-kiem</code> · <code>code-05/06/19</code> · <code>ui-01..04</code>, <code>ui-31</code> (mobile)</li>
+      <li>Giỏ hàng &amp; thanh toán: <code>13-hd-mua-khoa-hoc</code> · <code>code-07/08/09</code> · <code>ui-08..12</code></li>
+      <li>Học bài &amp; tiến độ: <code>14-hd-hoc-bai</code> · <code>code-10</code> · <code>ui-13</code>, <code>ui-14</code></li>
+      <li>Chat realtime: <code>15-hd-chat-realtime</code> · <code>code-11/12</code> · <code>ui-15</code>, <code>ui-24</code>, <code>ui-25</code></li>
+      <li>Hồ sơ: <code>19-hd-ho-so</code> · <code>code-13/18</code> · <code>ui-16</code></li>
+      <li>GV tạo khóa học &amp; nội dung: <code>16-hd-gv-tao-khoa-hoc</code> · <code>code-14/16</code> · <code>ui-18..23</code></li>
+      <li>Admin duyệt khóa: <code>17-hd-admin-duyet</code> · <code>code-15</code> · <code>ui-26</code>, <code>ui-29</code>, <code>ui-30</code></li>
+      <li>Admin người dùng: <code>18-hd-admin-nguoi-dung</code> · <code>code-17</code> · <code>ui-27</code></li>
+      <li>Admin danh mục: <code>20-hd-danh-muc</code> · <code>code-20</code> · <code>ui-28</code></li>
+    </ul></li>
+  <li><b>Hướng dẫn cài đặt</b>: chép từ <code>README.md</code>.</li>
+  <li><b>Danh sách prompt AI</b>: mục 14.</li>
+  <li><b>Phần chưa hoàn thành &amp; hướng phát triển</b>: mục 5 + 8.</li>
+</ol>
+<p>Cách ghép nhanh: npm <code>docx</code> (docx-js) hoặc Python <code>python-docx</code> (máy dev đã có python-docx 1.2). Máy không có LibreOffice; kiểm tra file bằng MS Word (đã cài) → Save as PDF.</p>
+
+<h3>Công cụ sinh tài liệu (<code>docs/tools/</code>)</h3>
+<div class="tbl"><table>
+<tr><th>File</th><th>Tác dụng</th><th>Cách chạy</th></tr>
+<tr><td><code>cdp.js</code></td><td>Thư viện nhỏ điều khiển Edge headless qua DevTools Protocol (Node 22, không cần cài gói)</td><td>dùng bởi các file dưới</td></tr>
+<tr><td><code>render_diagrams.js</code></td><td><code>docs/diagrams/*.mmd</code> → PNG (Mermaid 11 qua CDN)</td><td><code>node render_diagrams.js [lọc-tên]</code></td></tr>
+<tr><td><code>render_code.js</code></td><td>Cắt đoạn code + đánh số chú thích → PNG. Thêm hình mới: thêm 1 phần tử vào mảng <code>SNIPPETS</code></td><td><code>node render_code.js</code></td></tr>
+<tr><td><code>shots.js</code></td><td>Đăng nhập từng vai trò (tài khoản seed) và chụp 31 trang. Cần app chạy ở <code>localhost:8089</code> với DB mới (dữ liệu bị thay đổi sau khi chạy vì có bước mua hàng)</td><td><code>node shots.js [lọc-tên]</code></td></tr>
+<tr><td><code>smoke.sh</code></td><td>70 bước test HTTP bằng curl (biến <code>B</code> = URL app, <code>AVATAR</code> = đường dẫn Windows tới 1 ảnh png)</td><td><code>B=http://localhost:8090 AVATAR=C:/.../a.png bash smoke.sh</code></td></tr>
+<tr><td><code>ws_test.py</code></td><td>Test chat STOMP: HV gửi ↔ GV nhận, người ngoài bị chặn (cần <code>websocket-client</code>)</td><td><code>python ws_test.py</code></td></tr>
+<tr><td><code>gen_sql.py</code></td><td>Sinh lại <code>database/utelearn.sql</code>: DDL viết tay trong script + dữ liệu xuất từ H2 do DataSeeder tạo (cần thư mục <code>dump/db</code> đã seed, xem chú thích đầu file)</td><td><code>python gen_sql.py</code></td></tr>
+<tr><td><code>debug_csrf.js</code></td><td>Kiểm tra cookie XSRF-TOKEN có bị đổi giữa các trang không (lỗi #1 mục 13)</td><td><code>node debug_csrf.js</code></td></tr>
+</table></div>
+<p class="muted">Các script có đường dẫn tuyệt đối tới thư mục dự án trên máy dev hiện tại (<code>PROJECT = 'E:/Document_3rd_grade/...'</code>) và cổng 8089/8090 — sửa lại nếu chạy máy khác.</p>
 
 <!-- =============================================================== -->
 <h2 id="test">11. Đã test những gì</h2>
@@ -426,7 +473,8 @@ java -jar target/utelearn-0.0.1-SNAPSHOT.jar --spring.profiles.active=h2</code><
   <li>Smoke test bằng curl (70 bước): khách, đăng ký/đăng nhập, học viên mua khóa → thanh toán → học → tiến độ, phân quyền 403, admin (user, danh mục, duyệt/từ chối), giảng viên (tạo khóa có upload ảnh multipart, thêm chương/bài, gửi duyệt), link Youtube → embed. Kết quả: tất cả pass (2 lần fail ban đầu là do script test sai kỳ vọng / lỗi mã hóa tiếng Việt của Git Bash, không phải lỗi app).</li>
   <li>Chat WebSocket: client STOMP Python — HV gửi, GV nhận và ngược lại; người không thuộc cuộc trò chuyện bị chặn.</li>
   <li><code>database/utelearn.sql</code> nạp vào H2 (MySQL mode) + chạy app với <code>ddl-auto=validate</code>: schema khớp entity, đăng nhập bằng tài khoản trong SQL được.</li>
-  <li>Chưa test: MySQL thật, upload lên Cloudinary thật (chỉ test chế độ lưu local), giao diện mobile.</li>
+  <li>Test end-to-end bằng <b>trình duyệt thật</b> (Edge headless, <code>shots.js</code>): khách → học viên (thêm giỏ, thanh toán, học, chat) → giảng viên → admin, 31 trang. Chính bước này phát hiện lỗi CSRF #1 ở mục 13 (curl không phát hiện được vì không tải CSS/JS). Sau khi sửa: toàn bộ luồng chạy đúng, smoke test + test WebSocket chạy lại đều pass.</li>
+  <li>Chưa test: MySQL thật, upload lên Cloudinary thật (chỉ test chế độ lưu local), test tay trên điện thoại thật (mới chụp 1 trang ở khổ 390px).</li>
 </ul>
 
 <!-- =============================================================== -->
@@ -439,7 +487,120 @@ java -jar target/utelearn-0.0.1-SNAPSHOT.jar --spring.profiles.active=h2</code><
   <li>8.5 Thông báo realtime, 8.7 Biểu đồ admin, 8.8 Doanh thu GV.</li>
   <li>8.6 Quên mật khẩu.</li>
   <li>Sáng tạo: 8.9 Chatbot AI, 8.10 Chứng chỉ PDF, 8.11 Hỏi đáp (tiêu chí 5 chấm theo số nội dung ngoài chương trình).</li>
-  <li>Hoàn thiện docx + datasheet prompt, push GitHub, mở PR <code>dev → main</code>.</li>
+  <li>Ghép <code>docs/BaoCao_UTELearn.docx</code> từ hình có sẵn (mục 10) + làm datasheet prompt; push GitHub, mở PR <code>dev → main</code>.</li>
+</ol>
+
+<!-- =============================================================== -->
+<h2 id="loi">13. Nhật ký lỗi đã gặp</h2>
+<p>Tất cả lỗi gặp trong quá trình làm, kể cả lỗi môi trường và lỗi của script test, để người sau không mất thời gian dò lại.</p>
+<div class="tbl"><table>
+<tr><th>#</th><th>Lỗi / hiện tượng</th><th>Nguyên nhân</th><th>Xử lý</th><th>Trạng thái</th></tr>
+<tr><td>1</td>
+  <td><b>Sau khi đăng nhập, mọi form POST trên trình duyệt đều lỗi</b> (thêm giỏ, thanh toán, lưu hồ sơ...) → hiện trang "405". Test bằng curl thì vẫn qua.</td>
+  <td>Dùng JWT + <code>SessionCreationPolicy.STATELESS</code> làm <code>SessionManagementFilter</code> coi mỗi request là 1 lần đăng nhập mới → <code>CsrfAuthenticationStrategy</code> xóa và tạo lại cookie <code>XSRF-TOKEN</code> ở <b>mọi</b> request, kể cả request tải CSS/JS/favicon. Khi bấm submit, token trong form đã cũ → CSRF bị từ chối. Curl không tải CSS/JS nên không thấy.</td>
+  <td><code>SecurityConfig</code>: <code>csrf.sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy())</code>. Kiểm chứng: cookie giữ nguyên qua các trang (<code>docs/tools/debug_csrf.js</code>), chạy lại toàn bộ luồng trên trình duyệt OK.</td>
+  <td><span class="b done">ĐÃ SỬA</span></td></tr>
+<tr><td>2</td>
+  <td>Lỗi CSRF/thiếu quyền ở request POST hiện trang 405 thay vì 403.</td>
+  <td>Spring Security <i>forward</i> request (giữ method POST) tới <code>/403</code>, nhưng <code>HomeController</code> chỉ có <code>@GetMapping("/403")</code>.</td>
+  <td>Đổi thành <code>@RequestMapping("/403")</code>.</td>
+  <td><span class="b done">ĐÃ SỬA</span></td></tr>
+<tr><td>3</td>
+  <td>Khởi động profile <code>h2</code> chậm (~10 giây chỉ để mở DB).</td>
+  <td>URL H2 có <code>AUTO_SERVER=TRUE</code>.</td>
+  <td>Bỏ tham số này trong <code>application-h2.properties</code>.</td>
+  <td><span class="b done">ĐÃ SỬA</span></td></tr>
+<tr><td>4</td>
+  <td>Dòng log "Đã tạo dữ liệu mẫu" bị lỗi font trên console Windows.</td>
+  <td><code>System.out</code> in tiếng Việt có dấu, console dùng code page khác UTF-8.</td>
+  <td>Dùng SLF4J logger + chữ không dấu trong <code>DataSeeder</code>.</td>
+  <td><span class="b done">ĐÃ SỬA</span></td></tr>
+<tr><td>5</td>
+  <td>Nút "Tìm kiếm" ở banner trang chủ bị xuống 2 dòng khi màn hình hẹp.</td>
+  <td>Thiếu <code>white-space: nowrap</code>.</td>
+  <td>Thêm class <code>text-nowrap</code>.</td>
+  <td><span class="b done">ĐÃ SỬA</span></td></tr>
+<tr><td>6</td>
+  <td>Không chạy được ở cổng 8080.</td>
+  <td>Máy dev có chương trình khác đang chiếm 8080 (không liên quan dự án).</td>
+  <td>Chạy với <code>--server.port=8088</code>; <code>.claude/launch.json</code> dùng 8088.</td>
+  <td><span class="b part">MÔI TRƯỜNG</span></td></tr>
+<tr><td>7</td>
+  <td><code>mvn</code> không có trong PATH; lần tải dependency đầu báo <i>Premature end of Content-Length</i> (byte-buddy).</td>
+  <td>Máy chưa cài Maven; lỗi mạng tạm thời.</td>
+  <td>Dùng Maven 3.8.5 có sẵn trong <code>~/.m2/wrapper/dists</code>; chạy lại là tải được. Nên thêm Maven Wrapper (<code>mvn wrapper:wrapper</code>) vào repo.</td>
+  <td><span class="b part">MÔI TRƯỜNG</span></td></tr>
+<tr><td>8</td>
+  <td>Dữ liệu tiếng Việt gửi bằng curl trong Git Bash bị lưu thành dấu "?" (vd "Video chua r?").</td>
+  <td>Git Bash chuyển tham số dòng lệnh sang code page Windows trước khi đưa cho curl. <b>Không phải lỗi app</b>: gửi UTF-8 đã encode sẵn hoặc nhập trên trình duyệt đều lưu đúng.</td>
+  <td>Khi test bằng curl dùng dữ liệu đã URL-encode (<code>--data "name=Ki%E1%BB%83m..."</code>).</td>
+  <td><span class="b part">LỖI SCRIPT TEST</span></td></tr>
+<tr><td>9</td>
+  <td>Smoke test báo FAIL "GET /learn/3 (chưa mua) mong đợi 302 nhưng ra 200".</td>
+  <td>Kỳ vọng của test sai: bài đầu tiên của khóa React là bài <i>học thử</i> nên được xem → 200 là đúng.</td>
+  <td>Sửa lại kỳ vọng trong <code>smoke.sh</code> nếu dùng tiếp.</td>
+  <td><span class="b part">LỖI SCRIPT TEST</span></td></tr>
+<tr><td>10</td>
+  <td>Chạy app với <code>spring.main.web-application-type=none</code> (để sinh DDL) không tự thoát.</td>
+  <td>Thread của WebSocket message broker không phải daemon.</td>
+  <td>Chạy kèm <code>timeout 75</code>; file DDL đã sinh xong trước đó.</td>
+  <td><span class="b part">MÔI TRƯỜNG</span></td></tr>
+<tr><td>11</td>
+  <td>Script tạo file Java bằng bash heredoc báo <i>unexpected EOF while looking for matching '</i>.</td>
+  <td>Quoting của bash tool với nội dung có dấu nháy đơn.</td>
+  <td>Chuyển sang ghi file trực tiếp.</td>
+  <td><span class="b part">MÔI TRƯỜNG</span></td></tr>
+<tr><td>12</td>
+  <td>Sơ đồ kiến trúc tổng quan render lần đầu bị rối, đường nối cắt nhau.</td>
+  <td>Bố cục <code>flowchart LR</code> với nhiều cạnh 2 chiều.</td>
+  <td>Viết lại theo <code>flowchart TB</code> 3 tầng (trình duyệt / server / lưu trữ).</td>
+  <td><span class="b done">ĐÃ SỬA</span></td></tr>
+<tr><td>13</td>
+  <td><code>render_code.js</code> cắt đoạn code sai khi comment phía trên hàm có <code>{email}</code>.</td>
+  <td>Bộ đếm ngoặc bắt đầu đếm từ dòng comment.</td>
+  <td>Đếm ngoặc từ dòng khai báo hàm.</td>
+  <td><span class="b done">ĐÃ SỬA</span></td></tr>
+<tr><td>14</td>
+  <td>Chat: người không thuộc cuộc trò chuyện gửi tin thì bị chặn nhưng không nhận được thông báo lỗi.</td>
+  <td><code>ChatController.sendMessage</code> chỉ bắt <code>BusinessException</code>, còn <code>AccessDeniedException</code> chỉ được log.</td>
+  <td>Bắt thêm <code>AccessDeniedException</code> và gửi <code>/user/queue/errors</code>.</td>
+  <td><span class="b todo">CHƯA SỬA</span></td></tr>
+<tr><td>15</td>
+  <td>Chưa kiểm tra với MySQL thật và Cloudinary thật.</td>
+  <td>Máy dev không có MySQL server, Docker không chạy; chưa có tài khoản Cloudinary.</td>
+  <td>Đã kiểm tra thay thế: SQL nạp vào H2 chế độ MySQL + <code>ddl-auto=validate</code> pass; upload test ở chế độ lưu local.</td>
+  <td><span class="b todo">CẦN KIỂM TRA</span></td></tr>
+<tr><td>16</td>
+  <td>Git cảnh báo <i>LF will be replaced by CRLF</i> khi commit.</td>
+  <td><code>.gitattributes</code> có <code>text=auto</code> trên Windows.</td>
+  <td>Vô hại, bỏ qua.</td>
+  <td><span class="b part">VÔ HẠI</span></td></tr>
+</table></div>
+
+<!-- =============================================================== -->
+<h2 id="prompt">14. Nhật ký prompt AI</h2>
+<p>Công cụ: Claude Code (model Claude Opus 5.5) trong ứng dụng Claude desktop. Dưới đây là các prompt thật nhóm đã gửi, và các bước AI tự chia nhỏ để thực hiện. Khi làm tiếp, ghi thêm prompt vào bảng này và vào datasheet.</p>
+<h3>Prompt nhóm đã gửi</h3>
+<div class="tbl"><table>
+<tr><th>#</th><th>Prompt</th><th>Kết quả</th></tr>
+<tr><td>1</td><td>"Với sự hỗ trợ của AI, Nhóm hãy viết tài liệu bằng file .docx chi tiết hướng dẫn xây dựng từng chức năng của ứng dụng gồm các phần: các hình kiến trúc ứng dụng, các hình sơ đồ hoạt động của chức năng + hình diễn giải Source Code, hình diễn giải giao diện, file hướng dẫn setup ứng dụng, danh sách các prompt nhóm đã sử dụng để AI hỗ trợ sinh code, sinh hình,... Source Code + Database(.sql) + datasheet AI. Hãy xây dựng đề tài này cho tôi, đọc file tool.txt và folder Tiêu chí, sau đó chỉ làm tầm 50% sản phẩm, viết hand-off.html cho agent người khác có thể đọc hiểu và làm tiếp, code clean, của một đứa sinh viên gà, nhưng mà đầy đủ tính năng, viết report chức năng lại cho tôi để hiểu các code của bạn"</td><td>Toàn bộ project (mục 5), CSDL, hand-off, hình tài liệu</td></tr>
+<tr><td>2</td><td>"nhớ lâu lâu commit 1 cái"</td><td>Tạo nhánh <code>dev</code>, commit theo từng mốc</td></tr>
+<tr><td>3</td><td>"nhớ làm 50% và viết handoff cho tôi"</td><td>Giữ phạm vi ~50%, viết file này</td></tr>
+<tr><td>4</td><td>"thôi viết file handoff.html lên đi" · "lỗi gì viết lên hết"</td><td>Dừng mở rộng, bổ sung mục 13 (nhật ký lỗi) và mục 14</td></tr>
+</table></div>
+<h3>Các bước AI tự thực hiện (có thể dùng làm prompt mẫu cho từng phần)</h3>
+<ol>
+  <li>Đọc <code>tool.txt</code> (stack) + bảng tiêu chí chấm điểm → chọn chức năng, chia 34 chức năng thành phần làm ngay / phần bàn giao.</li>
+  <li>"Thiết kế CSDL đầy đủ cho nền tảng bán khóa học + LMS (17 bảng), sinh entity JPA có Lombok, tên bảng snake_case."</li>
+  <li>"Viết Spring Security dùng JWT lưu trong cookie HttpOnly, phân quyền STUDENT/INSTRUCTOR/ADMIN, vẫn bật CSRF cho form Thymeleaf."</li>
+  <li>"Viết service + controller cho: tìm kiếm có lọc/phân trang, giỏ hàng, checkout + cổng thanh toán giả lập, ghi danh, học bài + tính % tiến độ, chat STOMP 1-1, CRUD khóa học/chương/bài cho giảng viên, duyệt khóa + quản lý user/danh mục cho admin. Code đơn giản kiểu sinh viên, comment tiếng Việt."</li>
+  <li>"Viết giao diện Thymeleaf + Bootstrap 5 dùng chung fragment layout; trang chủ, danh sách, chi tiết, giỏ, thanh toán, học, chat, hồ sơ, trang giảng viên, trang admin."</li>
+  <li>"Tạo DataSeeder dữ liệu mẫu tiếng Việt (6 user, 6 danh mục, 8 khóa, 30 bài) với link video có thật."</li>
+  <li>"Viết smoke test curl cho toàn bộ luồng + test WebSocket bằng Python."</li>
+  <li>"Sinh file utelearn.sql khớp entity và kiểm tra bằng ddl-auto=validate."</li>
+  <li>"Viết sơ đồ Mermaid: kiến trúc, phân lớp, ERD, use case, sơ đồ hoạt động từng chức năng; render ra PNG."</li>
+  <li>"Render ảnh diễn giải code có đánh số chú thích; chụp ảnh giao diện từng vai trò bằng trình duyệt headless."</li>
+  <li>Phát hiện lỗi CSRF khi chụp ảnh giao diện → phân tích nguyên nhân → sửa (mục 13 #1).</li>
 </ol>
 </main>
 </div>

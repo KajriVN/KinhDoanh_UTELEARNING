@@ -1,0 +1,32 @@
+flowchart TB
+    subgraph P["Tầng giao diện (templates/)"]
+        T1["fragments/layout.html"]
+        T2["home, course, cart, order, learning"]
+        T3["chat, profile, instructor, admin"]
+    end
+    subgraph C["Tầng Controller (controller/)"]
+        C1["HomeController · AuthController · CourseController"]
+        C2["CartController · OrderController · LearningController"]
+        C3["ChatController · ProfileController · GlobalModelAdvice"]
+        C4["instructor/* · admin/*"]
+    end
+    subgraph S["Tầng Service (service/)"]
+        S1["UserService · CategoryService · CourseService"]
+        S2["CurriculumService · EnrollmentService · CartService"]
+        S3["OrderService · LearningService · ChatService"]
+        S4["FileUploadService (Cloudinary)"]
+    end
+    subgraph R["Tầng Repository (repository/)"]
+        R1["17 interface kế thừa JpaRepository"]
+    end
+    subgraph E["Entity (entity/)"]
+        E1["User, Course, Section, Lesson, Enrollment, Order, ..."]
+    end
+    subgraph X["Cấu hình & bảo mật"]
+        X1["config/SecurityConfig · WebSocketConfig · WebMvcConfig · DataSeeder"]
+        X2["security/JwtUtil · JwtAuthFilter · CustomUserDetailsService"]
+    end
+
+    P --> C --> S --> R --> E
+    X -.-> C
+    X -.-> S

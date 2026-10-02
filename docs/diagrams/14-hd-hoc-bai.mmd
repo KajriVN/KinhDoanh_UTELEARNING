@@ -1,0 +1,19 @@
+flowchart TD
+    start(( )) --> A(["Học viên mở /learn/{courseId}?lessonId="])
+    A --> B(["Lấy Enrollment + danh sách bài đã hoàn thành"])
+    B --> C{"Có lessonId?"}
+    C -- "Có" --> C1(["Mở đúng bài đó"])
+    C -- "Không" --> C2(["Mở bài đầu tiên chưa học"])
+    C1 --> D
+    C2 --> D{"Được xem bài?<br/>(đã ghi danh / chủ khóa / admin / bài học thử)"}
+    D -- "Không" --> D1(["Quay lại trang khóa học + báo cần đăng ký"]) --> stop1((( )))
+    D -- "Có" --> E(["Hiển thị video (Youtube embed hoặc mp4 Cloudinary),<br/>nội dung, sidebar giáo trình có dấu ✓"])
+    E --> F{"Bấm 'Hoàn thành bài học'?"}
+    F -- "Không" --> stop2((( )))
+    F -- "Có" --> G(["POST /learn/{c}/lessons/{l}/complete"])
+    G --> H(["Lưu LessonProgress (nếu chưa có)"])
+    H --> I(["progress = số bài xong / tổng số bài × 100"])
+    I --> J{"progress = 100%?"}
+    J -- "Có" --> J1(["Lưu completedAt + chúc mừng hoàn thành"]) --> K
+    J -- "Không" --> K(["Chuyển sang bài kế tiếp"])
+    K --> E

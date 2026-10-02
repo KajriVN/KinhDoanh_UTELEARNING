@@ -1,0 +1,33 @@
+flowchart TB
+    subgraph Client["Trình duyệt — Học viên / Giảng viên / Admin"]
+        direction LR
+        UI["Trang HTML<br/>Thymeleaf + Bootstrap 5"]
+        JS["chat.js<br/>SockJS + STOMP"]
+    end
+
+    subgraph Server["Ứng dụng Spring Boot 3.5 (Tomcat nhúng)"]
+        direction TB
+        SEC["Spring Security<br/>JwtAuthFilter · CSRF · phân quyền"]
+        WS["WebSocket STOMP<br/>Simple Broker /user/queue"]
+        MVC["Controller<br/>@Controller · @MessageMapping"]
+        VIEW["Thymeleaf<br/>render HTML"]
+        SVC["Service<br/>nghiệp vụ + kiểm tra quyền"]
+        REPO["Repository<br/>Spring Data JPA / Hibernate"]
+    end
+
+    subgraph Infra["Lưu trữ"]
+        direction LR
+        DB[("MySQL 8<br/>17 bảng")]
+        CLD[["Cloudinary<br/>ảnh bìa, avatar, video"]]
+    end
+
+    UI -- "HTTP request + cookie JWT" --> SEC
+    JS <-- "WebSocket /ws" --> WS
+    SEC --> MVC
+    WS <--> MVC
+    MVC --> VIEW
+    VIEW -. "HTML response" .-> UI
+    MVC --> SVC
+    SVC --> REPO
+    REPO -- "JDBC" --> DB
+    SVC -- "upload API" --> CLD

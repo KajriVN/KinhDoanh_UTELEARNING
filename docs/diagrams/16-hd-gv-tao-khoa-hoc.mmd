@@ -1,0 +1,16 @@
+flowchart TD
+    start(( )) --> A(["Giảng viên vào 'Tạo khóa học'"])
+    A --> B(["Nhập tên, mô tả, danh mục, trình độ, giá, chọn ảnh bìa"])
+    B --> C{"Form hợp lệ?"}
+    C -- "Không" --> C1(["Hiện lỗi"]) --> B
+    C -- "Có" --> D(["FileUploadService.uploadImage()<br/>→ Cloudinary (hoặc thư mục uploads/)"])
+    D --> E(["Lưu Course với status = DRAFT"])
+    E --> F(["Trang nội dung: thêm Chương"])
+    F --> G(["Thêm Bài học: tên, link Youtube hoặc upload video,<br/>thời lượng, cho học thử"])
+    G --> H{"Thêm tiếp?"}
+    H -- "Có" --> F
+    H -- "Không" --> I(["Bấm 'Gửi duyệt'"])
+    I --> J{"Khóa có ít nhất 1 bài học?"}
+    J -- "Không" --> J1(["Báo lỗi"]) --> F
+    J -- "Có" --> K(["status = PENDING (chờ admin duyệt)"])
+    K --> stop((( )))

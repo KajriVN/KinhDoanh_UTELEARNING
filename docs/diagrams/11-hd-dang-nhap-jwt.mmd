@@ -1,0 +1,29 @@
+sequenceDiagram
+    autonumber
+    actor U as Người dùng
+    participant B as Trình duyệt
+    participant F as JwtAuthFilter
+    participant AC as AuthController
+    participant AM as AuthenticationManager
+    participant J as JwtUtil
+    participant DB as MySQL
+
+    U->>B: Nhập email + mật khẩu, bấm Đăng nhập
+    B->>AC: POST /auth/login (email, password, _csrf)
+    AC->>AM: authenticate(email, password)
+    AM->>DB: CustomUserDetailsService.loadUserByUsername(email)
+    DB-->>AM: User (password BCrypt, role, enabled)
+    alt Sai mật khẩu / tài khoản bị khóa
+        AM-->>AC: BadCredentialsException / DisabledException
+        AC-->>B: Hiện lại trang login + thông báo lỗi
+    else Đúng
+        AC->>J: generateToken(email, role)
+        J-->>AC: JWT (HS256, hết hạn 1 ngày)
+        AC-->>B: 302 + Set-Cookie access_token (HttpOnly, SameSite=Lax)
+    end
+    Note over B,F: Các request sau
+    B->>F: GET /my-courses (Cookie: access_token)
+    F->>J: isValid(token) + getEmail(token)
+    F->>DB: load user, kiểm tra enabled
+    F-->>F: SecurityContext.setAuthentication(...)
+    F->>B: Controller xử lý → trả HTML theo quyền
