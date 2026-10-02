@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
 
@@ -38,6 +39,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(csrfHandler)
+                        // JWT làm mỗi request đều "đăng nhập lại" -> mặc định Spring sẽ đổi CSRF token liên tục
+                        // (tải CSS/JS xong là token trong form bị cũ). Tắt việc đổi token này đi.
+                        .sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy())
                         .ignoringRequestMatchers("/ws/**"))
                 // dùng JWT nên không cần session
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

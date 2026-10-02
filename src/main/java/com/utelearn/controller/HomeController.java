@@ -5,6 +5,7 @@ import com.utelearn.service.CourseService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 public class HomeController {
@@ -24,7 +25,8 @@ public class HomeController {
         return "home/index";
     }
 
-    @GetMapping("/403")
+    // dùng @RequestMapping (mọi method) vì Spring Security forward cả request POST bị chặn tới đây
+    @RequestMapping("/403")
     public String accessDenied() {
         return "error/403";
     }
