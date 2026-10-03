@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Chứng chỉ ' + ${certificate.code})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-5" style="max-width: 760px">
+    <div class="box text-center py-5">
+        <i class="bi bi-patch-check-fill text-success" style="font-size: 3.5rem"></i>
+        <h4 class="fw-bold mt-2">Chứng chỉ hợp lệ</h4>
+        <p class="text-muted">Chứng chỉ này do UTELearn cấp.</p>
+
+        <table class="table table-sm text-start mx-auto mt-4" style="max-width: 520px">
+            <tr><td class="text-muted">Mã chứng chỉ</td><td class="fw-semibold" th:text="${certificate.code}"></td></tr>
+            <tr><td class="text-muted">Học viên</td><td class="fw-semibold" th:text="${certificate.enrollment.user.fullName}"></td></tr>
+            <tr><td class="text-muted">Khóa học</td><td th:text="${certificate.enrollment.course.title}"></td></tr>
+            <tr><td class="text-muted">Giảng viên</td><td th:text="${certificate.enrollment.course.instructor.fullName}"></td></tr>
+            <tr><td class="text-muted">Ngày cấp</td><td th:text="${@fmt.date(certificate.issuedAt)}"></td></tr>
+        </table>
+
+        <a class="btn btn-primary mt-3" th:href="@{/certificates/{c}/download(c=${certificate.code})}">
+            <i class="bi bi-file-earmark-pdf me-1"></i>Tải chứng chỉ (PDF)</a>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

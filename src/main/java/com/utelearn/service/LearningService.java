@@ -26,15 +26,17 @@ public class LearningService {
     private final EnrollmentRepository enrollmentRepository;
     private final EnrollmentService enrollmentService;
     private final CourseService courseService;
+    private final CertificateService certificateService;
 
     public LearningService(LessonRepository lessonRepository, LessonProgressRepository lessonProgressRepository,
                            EnrollmentRepository enrollmentRepository, EnrollmentService enrollmentService,
-                           CourseService courseService) {
+                           CourseService courseService, CertificateService certificateService) {
         this.lessonRepository = lessonRepository;
         this.lessonProgressRepository = lessonProgressRepository;
         this.enrollmentRepository = enrollmentRepository;
         this.enrollmentService = enrollmentService;
         this.courseService = courseService;
+        this.certificateService = certificateService;
     }
 
     public Lesson findLesson(Long lessonId) {
@@ -137,8 +139,10 @@ public class LearningService {
 
         if (percent == 100 && enrollment.getCompletedAt() == null) {
             enrollment.setCompletedAt(LocalDateTime.now());
-            // TODO (hand-off): cấp chứng chỉ hoàn thành khóa học ở đây
         }
         enrollmentRepository.save(enrollment);
+        if (percent == 100) {
+            certificateService.issue(enrollment);
+        }
     }
 }
