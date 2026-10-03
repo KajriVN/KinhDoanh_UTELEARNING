@@ -46,6 +46,32 @@
                     <li class="nav-item" sec:authorize="hasRole('ADMIN')">
                         <a class="nav-link" th:href="@{/admin}">Quản trị</a>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link position-relative px-2" href="#" data-bs-toggle="dropdown"
+                           data-bs-auto-close="outside" title="Thông báo">
+                            <i class="bi bi-bell fs-5"></i>
+                            <span id="bell-badge" class="badge rounded-pill bg-danger cart-badge"
+                                  th:classappend="${unreadCount == null or unreadCount == 0} ? 'd-none'"
+                                  th:text="${unreadCount}">0</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end shadow-sm p-0" style="width: 340px">
+                            <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                                <b>Thông báo</b>
+                                <a th:href="@{/notifications}" class="small text-decoration-none">Xem tất cả</a>
+                            </div>
+                            <div id="notif-list" style="max-height: 380px; overflow-y: auto">
+                                <a th:each="n : ${latestNotifications}" class="dropdown-item notif-item py-2"
+                                   th:classappend="${!n.read} ? 'bg-primary-subtle'"
+                                   th:href="@{/notifications/{id}/go(id=${n.id})}">
+                                    <div class="fw-semibold small" th:text="${n.title}"></div>
+                                    <div class="small text-wrap" th:text="${n.content}"></div>
+                                    <div class="small text-muted" th:text="${@fmt.dateTime(n.createdAt)}"></div>
+                                </a>
+                                <div id="notif-empty" class="text-center text-muted small py-4"
+                                     th:if="${latestNotifications == null or latestNotifications.empty}">Chưa có thông báo</div>
+                            </div>
+                        </div>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link position-relative px-2" th:href="@{/cart}" title="Giỏ hàng">
                             <i class="bi bi-cart3 fs-5"></i>
@@ -63,6 +89,7 @@
                             <li class="px-3 py-2 small text-muted" th:text="${currentUser.role.label}">Vai trò</li>
                             <li><a class="dropdown-item" th:href="@{/profile}"><i class="bi bi-person me-2"></i>Hồ sơ cá nhân</a></li>
                             <li><a class="dropdown-item" th:href="@{/my-courses}"><i class="bi bi-journal-bookmark me-2"></i>Khóa học của tôi</a></li>
+                            <li><a class="dropdown-item" th:href="@{/wishlist}"><i class="bi bi-heart me-2"></i>Khóa học yêu thích</a></li>
                             <li><a class="dropdown-item" th:href="@{/orders}"><i class="bi bi-receipt me-2"></i>Đơn hàng</a></li>
                             <li sec:authorize="hasAnyRole('INSTRUCTOR','ADMIN')">
                                 <a class="dropdown-item" th:href="@{/instructor/chats}"><i class="bi bi-chat-dots me-2"></i>Tin nhắn học viên</a>
@@ -120,7 +147,20 @@
 </div>
 
 <!-- ================= THẺ KHÓA HỌC ================= -->
+<!-- hàng ngôi sao theo điểm trung bình (avg có thể null) -->
+<span th:fragment="stars(avg)" class="text-warning">
+    <i th:each="i : ${#numbers.sequence(1, 5)}"
+       th:class="${avg != null and avg >= i} ? 'bi bi-star-fill' : (${avg != null and avg >= i - 0.5} ? 'bi bi-star-half' : 'bi bi-star')"></i>
+</span>
+
 <div th:fragment="courseCard(c)" class="card course-card h-100">
+    <form method="post" th:action="@{/wishlist/toggle/{id}(id=${c.id})}"
+          style="position: absolute; top: 8px; right: 8px; z-index: 2">
+        <button type="submit" class="btn btn-light btn-sm rounded-circle shadow-sm" style="width: 34px; height: 34px; padding: 0"
+                th:title="${wishlistIds != null and wishlistIds.contains(c.id)} ? 'Bỏ yêu thích' : 'Thêm vào yêu thích'">
+            <i th:class="${wishlistIds != null and wishlistIds.contains(c.id)} ? 'bi bi-heart-fill text-danger' : 'bi bi-heart'"></i>
+        </button>
+    </form>
     <a th:href="@{/courses/{id}(id=${c.id})}">
         <div th:replace="~{fragments/layout :: thumb(${c})}"></div>
     </a>
@@ -130,6 +170,11 @@
             <a th:href="@{/courses/{id}(id=${c.id})}" th:text="${c.title}">Tên khóa học</a>
         </h6>
         <div class="small text-muted mb-1"><i class="bi bi-person-video3 me-1"></i><span th:text="${c.instructor.fullName}">GV</span></div>
+        <div class="small mb-1" th:if="${c.reviewCount != null and c.reviewCount > 0}">
+            <b th:text="${#numbers.formatDecimal(c.averageRating, 1, 1)}">4.5</b>
+            <span th:replace="~{fragments/layout :: stars(${c.averageRating})}"></span>
+            <span class="text-muted" th:text="'(' + ${c.reviewCount} + ')'"></span>
+        </div>
         <div class="small text-muted">
             <i class="bi bi-collection-play me-1"></i><span th:text="${c.totalLessons}">0</span> bài học
             · <span th:text="${c.level.label}">Cơ bản</span>
@@ -165,8 +210,8 @@
        th:classappend="${active == 'chats'} ? 'active'"><i class="bi bi-chat-dots"></i> Tin nhắn học viên</a>
     <a th:href="@{/instructor/assignments}" class="list-group-item list-group-item-action"
        th:classappend="${active == 'assignments'} ? 'active'"><i class="bi bi-clipboard-check"></i> Bài tập &amp; chấm điểm</a>
-    <span class="list-group-item disabled" title="Chưa làm - xem hand-off.html">
-        <i class="bi bi-graph-up"></i> Doanh thu <span class="badge bg-secondary-subtle text-secondary">sắp có</span></span>
+    <a th:href="@{/instructor/revenue}" class="list-group-item list-group-item-action"
+       th:classappend="${active == 'revenue'} ? 'active'"><i class="bi bi-graph-up"></i> Doanh thu</a>
 </div>
 
 <!-- ================= MENU ADMIN ================= -->
@@ -179,10 +224,30 @@
        th:classappend="${active == 'categories'} ? 'active'"><i class="bi bi-tags"></i> Danh mục</a>
     <a th:href="@{/admin/courses(status='PENDING')}" class="list-group-item list-group-item-action"
        th:classappend="${active == 'courses'} ? 'active'"><i class="bi bi-patch-check"></i> Duyệt khóa học</a>
-    <span class="list-group-item disabled" title="Chưa làm - xem hand-off.html">
-        <i class="bi bi-receipt"></i> Đơn hàng <span class="badge bg-secondary-subtle text-secondary">sắp có</span></span>
-    <span class="list-group-item disabled" title="Chưa làm - xem hand-off.html">
-        <i class="bi bi-ticket-perforated"></i> Mã giảm giá <span class="badge bg-secondary-subtle text-secondary">sắp có</span></span>
+    <a th:href="@{/admin/orders}" class="list-group-item list-group-item-action"
+       th:classappend="${active == 'orders'} ? 'active'"><i class="bi bi-receipt"></i> Đơn hàng</a>
+    <a th:href="@{/admin/coupons}" class="list-group-item list-group-item-action"
+       th:classappend="${active == 'coupons'} ? 'active'"><i class="bi bi-ticket-perforated"></i> Mã giảm giá</a>
+</div>
+
+<!-- ================= CHATBOT TƯ VẤN KHÓA HỌC ================= -->
+<div th:fragment="chatbot">
+    <button id="bot-toggle" type="button" class="btn btn-primary rounded-circle shadow bot-toggle" title="Chat tư vấn khóa học">
+        <i class="bi bi-chat-dots-fill fs-4"></i>
+    </button>
+    <div id="bot-panel" class="bot-panel shadow d-none">
+        <div class="bot-head d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-stars me-1"></i>Trợ lý UTELearn</span>
+            <button id="bot-close" type="button" class="btn-close btn-close-white" aria-label="Đóng"></button>
+        </div>
+        <div id="bot-messages" class="bot-messages"></div>
+        <form id="bot-form" class="bot-form d-flex gap-2">
+            <input id="bot-input" class="form-control form-control-sm" maxlength="500" autocomplete="off"
+                   placeholder="Bạn muốn học gì?">
+            <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-send"></i></button>
+        </form>
+    </div>
+    <script th:src="@{/js/chatbot.js}"></script>
 </div>
 
 <!-- ================= FOOTER ================= -->
@@ -214,6 +279,12 @@
         <div class="small text-center">&copy; 2026 UTELearn. All rights reserved.</div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- thông báo realtime: chỉ khi đã đăng nhập -->
+    <th:block th:if="${currentUser != null}">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+        <script th:src="@{/js/notification.js}"></script>
+    </th:block>
 </footer>
 
 </body>

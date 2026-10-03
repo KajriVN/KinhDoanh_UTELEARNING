@@ -465,3 +465,16 @@ a {
 .site-footer h6 {
     color: #fff;
 }
+
+/* ===== Chatbot tư vấn ===== */
+.bot-toggle { position: fixed; right: 20px; bottom: 20px; width: 56px; height: 56px; z-index: 1050; }
+.bot-panel { position: fixed; right: 20px; bottom: 88px; width: 340px; max-width: calc(100vw - 40px);
+             background: #fff; border-radius: 14px; overflow: hidden; z-index: 1050; display: flex; flex-direction: column; }
+.bot-panel.d-none { display: none !important; }
+.bot-head { background: #2563eb; color: #fff; padding: 10px 14px; font-weight: 600; }
+.bot-messages { height: 320px; overflow-y: auto; padding: 12px; background: #f6f7fb; }
+.bot-msg { display: flex; margin-bottom: 8px; }
+.bot-msg.user { justify-content: flex-end; }
+.bot-bubble { max-width: 85%; padding: 8px 12px; border-radius: 12px; font-size: 14px; background: #fff; border: 1px solid #e5e7eb; }
+.bot-msg.user .bot-bubble { background: #2563eb; color: #fff; border-color: #2563eb; }
+.bot-form { padding: 10px; border-top: 1px solid #e5e7eb; }

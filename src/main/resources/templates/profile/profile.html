@@ -72,6 +72,14 @@
                 </div>
                 <button class="btn btn-outline-primary" type="submit">Đổi mật khẩu</button>
             </form>
+            <div class="box mt-4" th:if="${currentUser.role.name() == 'STUDENT'}">
+                <h5 class="fw-bold mb-2">Trở thành giảng viên</h5>
+                <p class="small text-muted">Chia sẻ kiến thức và bán khóa học trên UTELearn. Khóa học của bạn sẽ được quản trị viên duyệt trước khi hiển thị.</p>
+                <form method="post" th:action="@{/profile/become-instructor}"
+                      onsubmit="return confirm('Chuyển tài khoản này thành giảng viên?')">
+                    <button class="btn btn-outline-success" type="submit"><i class="bi bi-person-video3 me-1"></i>Đăng ký làm giảng viên</button>
+                </form>
+            </div>
         </div>
     </div>
 </main>

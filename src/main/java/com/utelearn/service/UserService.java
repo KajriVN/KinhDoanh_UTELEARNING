@@ -46,8 +46,19 @@ public class UserService {
         user.setFullName(form.getFullName().trim());
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(form.getPassword()));
-        user.setRole(Role.STUDENT); // đăng ký mặc định là học viên, admin sẽ cấp quyền giảng viên
+        // mặc định là học viên; tích "làm giảng viên" thì là giảng viên (khóa học vẫn phải qua admin duyệt)
+        user.setRole(form.isInstructor() ? Role.INSTRUCTOR : Role.STUDENT);
         return userRepository.save(user);
+    }
+
+    // Học viên đang dùng tài khoản muốn trở thành giảng viên
+    @Transactional
+    public void becomeInstructor(User user) {
+        if (user.getRole() != Role.STUDENT) {
+            throw new BusinessException("Tài khoản của bạn đã là giảng viên hoặc quản trị viên");
+        }
+        user.setRole(Role.INSTRUCTOR);
+        userRepository.save(user);
     }
 
     // ===== Tìm user =====

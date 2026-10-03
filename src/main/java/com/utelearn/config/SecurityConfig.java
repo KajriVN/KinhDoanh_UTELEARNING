@@ -1,9 +1,11 @@
 package com.utelearn.config;
 
 import com.utelearn.security.JwtAuthFilter;
+import com.utelearn.security.LoginEntryPoint;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -12,7 +14,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
@@ -23,9 +24,11 @@ import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final LoginEntryPoint loginEntryPoint;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter, LoginEntryPoint loginEntryPoint) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.loginEntryPoint = loginEntryPoint;
     }
 
     @Bean
@@ -42,18 +45,22 @@ public class SecurityConfig {
                         // JWT làm mỗi request đều "đăng nhập lại" -> mặc định Spring sẽ đổi CSRF token liên tục
                         // (tải CSS/JS xong là token trong form bị cũ). Tắt việc đổi token này đi.
                         .sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy())
-                        .ignoringRequestMatchers("/ws/**"))
+                        .ignoringRequestMatchers("/ws/**", "/api/**"))
                 // dùng JWT nên không cần session
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/courses", "/courses/*", "/auth/**", "/error", "/403",
-                                "/css/**", "/js/**", "/images/**", "/uploads/**", "/favicon.ico").permitAll()
+                                "/css/**", "/js/**", "/images/**", "/uploads/**", "/favicon.ico",
+                                "/payment/vnpay-return", "/payment/vnpay-ipn", "/certificates/**").permitAll()
+                        // REST API: đăng nhập + xem khóa học công khai, còn lại cần Bearer token
+                        .requestMatchers("/api/auth/login", "/api/categories", "/api/ai/chat").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/courses", "/api/courses/*").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/instructor/**").hasAnyRole("INSTRUCTOR", "ADMIN")
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
-                        // chưa đăng nhập -> chuyển về trang login
-                        .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/auth/login"))
+                        // chưa đăng nhập -> chuyển về trang login (nhớ trang đang vào), API thì trả 401
+                        .authenticationEntryPoint(loginEntryPoint)
                         // không đủ quyền -> trang 403
                         .accessDeniedPage("/403"))
                 // tự làm login/logout trong AuthController nên tắt mặc định

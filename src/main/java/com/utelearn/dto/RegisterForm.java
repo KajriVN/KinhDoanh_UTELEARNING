@@ -24,4 +24,7 @@ public class RegisterForm {
 
     @NotBlank(message = "Vui lòng nhập lại mật khẩu")
     private String confirmPassword;
+
+    // tích chọn thì tạo tài khoản giảng viên (khóa học vẫn phải được admin duyệt mới hiện ra)
+    private boolean instructor;
 }

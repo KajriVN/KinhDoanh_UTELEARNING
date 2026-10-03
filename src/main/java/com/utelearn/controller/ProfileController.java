@@ -61,6 +61,19 @@ public class ProfileController {
         return "redirect:/profile";
     }
 
+    // Học viên bấm "Trở thành giảng viên"
+    @PostMapping("/become-instructor")
+    public String becomeInstructor(Principal principal, RedirectAttributes redirect) {
+        User user = userService.findByEmail(principal.getName());
+        try {
+            userService.becomeInstructor(user);
+            redirect.addFlashAttribute("success", "Bạn đã trở thành giảng viên! Vào mục \"Giảng dạy\" để tạo khóa học đầu tiên.");
+        } catch (BusinessException e) {
+            redirect.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/profile";
+    }
+
     @PostMapping("/password")
     public String changePassword(@Valid @ModelAttribute("passwordForm") ChangePasswordForm form,
                                  BindingResult result,
