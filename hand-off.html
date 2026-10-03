@@ -75,10 +75,10 @@
   <a href="#chay">2. Chạy dự án</a>
   <a href="#kien-truc">3. Kiến trúc &amp; cấu trúc thư mục</a>
   <a href="#quy-uoc">4. Quy ước code</a>
-  <a href="#chuc-nang">5. Bảng chức năng (xong / chưa)</a>
+  <a href="#chuc-nang">5. Bảng chức năng</a>
   <a href="#csdl">6. Cơ sở dữ liệu</a>
   <a href="#routes">7. Danh sách URL đã có</a>
-  <a href="#todo">8. Spec chi tiết phần còn lại</a>
+  <a href="#todo">8. Spec chi tiết (đã triển khai)</a>
   <a href="#luu-y">9. Lưu ý / nợ kỹ thuật</a>
   <a href="#tai-lieu">10. Tài liệu nộp (.docx, prompt)</a>
   <a href="#test">11. Đã test những gì</a>
@@ -90,20 +90,19 @@
 <main>
 <header class="hero">
   <h1>UTELearn — Tài liệu bàn giao (hand-off)</h1>
-  <div class="muted">Nền tảng kinh doanh khóa học trực tuyến &amp; quản lý học tập số · Đồ án môn Lập trình Web · cập nhật 03/10/2026</div>
+  <div class="muted">Nền tảng kinh doanh khóa học trực tuyến &amp; quản lý học tập số · Đồ án môn Lập trình Web · cập nhật 03/10/2026 (đã làm hết mục 8)</div>
   <p>File này dành cho <b>người/agent làm tiếp</b>. Đọc hết mục 1–4 trước khi code, sau đó chọn việc ở mục 8.
-     Phần đã làm khoảng <b>50%</b> sản phẩm: toàn bộ <b>CSDL (17 bảng)</b> đã có, phần code chạy được cho luồng chính
-     (tài khoản, khóa học, giỏ hàng, thanh toán giả lập, học bài, tiến độ, chat realtime, giảng viên, admin).</p>
+     Cả <b>34/34 chức năng</b> trong bảng mục 5 đã có code: luồng chính (tài khoản, khóa học, giỏ hàng, thanh toán giả lập + VNPay, học bài, tiến độ, chat realtime, giảng viên, admin) và toàn bộ phần mở rộng ở mục 8 (bài tập, coupon, đánh giá, thông báo realtime, quên mật khẩu, biểu đồ, chatbot AI, chứng chỉ PDF, hỏi đáp, wishlist, quiz, REST API). Việc còn lại nằm ở mục 9 (nợ kỹ thuật), mục 10 (tài liệu nộp) và mục 12.</p>
 </header>
 
 <!-- =============================================================== -->
 <h2 id="tong-quan">1. Tổng quan &amp; trạng thái</h2>
 <div class="grid">
-  <div class="stat"><b>19 / 34</b><span class="muted">chức năng đã xong (~56%)</span></div>
-  <div class="stat"><b>17</b><span class="muted">bảng CSDL (100% schema)</span></div>
-  <div class="stat"><b>15</b><span class="muted">controller · 11 service</span></div>
-  <div class="stat"><b>32</b><span class="muted">trang Thymeleaf</span></div>
-  <div class="stat"><b>70 / 72</b><span class="muted">smoke test pass (H2) · xem mục 11</span></div>
+  <div class="stat"><b>34 / 34</b><span class="muted">chức năng đã xong (100%)</span></div>
+  <div class="stat"><b>23</b><span class="muted">bảng CSDL (17 bảng gốc + 6 bảng mới)</span></div>
+  <div class="stat"><b>26</b><span class="muted">controller · 23 service</span></div>
+  <div class="stat"><b>45</b><span class="muted">file template Thymeleaf</span></div>
+  <div class="stat"><b>70 / 72</b><span class="muted">smoke test pass (H2) · cộng hơn 300 bước test riêng từng chức năng · xem mục 11</span></div>
 </div>
 
 <div class="card">
@@ -146,6 +145,16 @@ java -jar target/utelearn-0.0.1-SNAPSHOT.jar --spring.profiles.active=h2</code><
 <h3>Cloudinary (tùy chọn)</h3>
 <p>Đặt <code>CLOUDINARY_CLOUD_NAME</code>, <code>CLOUDINARY_API_KEY</code>, <code>CLOUDINARY_API_SECRET</code>. Nếu để trống, <code>FileUploadService</code> lưu file vào <code>uploads/</code> và phục vụ qua <code>/uploads/**</code> (xem <code>WebMvcConfig</code>).</p>
 
+<h3>Biến môi trường tùy chọn (đều có giá trị mặc định, để trống vẫn chạy)</h3>
+<div class="tbl"><table>
+  <tr><th>Biến</th><th>Dùng cho</th><th>Khi để trống</th></tr>
+  <tr><td><code>VNPAY_TMN_CODE</code>, <code>VNPAY_HASH_SECRET</code></td><td>Thanh toán VNPay sandbox (mục 8.1)</td><td>Ẩn nút VNPay, chỉ còn thanh toán giả lập</td></tr>
+  <tr><td><code>MAIL_USERNAME</code>, <code>MAIL_PASSWORD</code> (+ <code>MAIL_HOST</code>, <code>MAIL_PORT</code>)</td><td>Gửi mail quên mật khẩu (Gmail App Password)</td><td>Nội dung mail (có link đặt lại) chỉ in ra log — đủ để demo</td></tr>
+  <tr><td><code>APP_BASE_URL</code></td><td>Gốc URL trong link mail và <code>vnp_ReturnUrl</code></td><td><code>http://localhost:8080</code> — nhớ đổi nếu chạy cổng khác</td></tr>
+  <tr><td><code>ANTHROPIC_API_KEY</code> (+ <code>AI_MODEL</code>, <code>AI_API_URL</code>)</td><td>Chatbot AI (mục 8.9)</td><td>Chatbot tự gợi ý khóa theo từ khóa, không gọi AI</td></tr>
+  <tr><td><code>JWT_SECRET</code>, <code>DB_USERNAME</code>, <code>DB_PASSWORD</code>, <code>CLOUDINARY_*</code></td><td>Như đã nêu ở trên</td><td>Giá trị mặc định / lưu file local</td></tr>
+</table></div>
+
 <h3>Tài khoản mẫu</h3>
 <div class="tbl"><table>
   <tr><th>Email</th><th>Mật khẩu</th><th>Vai trò</th><th>Dữ liệu sẵn có</th></tr>
@@ -161,7 +170,7 @@ java -jar target/utelearn-0.0.1-SNAPSHOT.jar --spring.profiles.active=h2</code><
 <h2 id="kien-truc">3. Kiến trúc &amp; cấu trúc thư mục</h2>
 <p>Kiến trúc MVC nhiều lớp (server-side rendering). Request đi từ trên xuống:</p>
 <div class="layers">
-  <div class="layer"><b>Trình duyệt</b> <small>— HTML (Thymeleaf render) + Bootstrap, JS chỉ dùng cho chat (SockJS/STOMP)</small></div>
+  <div class="layer"><b>Trình duyệt</b> <small>— HTML (Thymeleaf render) + Bootstrap, JS dùng cho chat + thông báo (SockJS/STOMP), chatbot, Chart.js</small></div>
   <div class="arrow">▼ cookie <code>access_token</code> (JWT) + <code>XSRF-TOKEN</code></div>
   <div class="layer"><b>Spring Security filter chain</b> <small>— <code>JwtAuthFilter</code> đọc cookie → <code>SecurityContext</code>; phân quyền URL trong <code>SecurityConfig</code></small></div>
   <div class="arrow">▼</div>
@@ -176,19 +185,21 @@ java -jar target/utelearn-0.0.1-SNAPSHOT.jar --spring.profiles.active=h2</code><
 
 <h3>Cấu trúc thư mục</h3>
 <pre><code>├── pom.xml
-├── database/utelearn.sql            ← script MySQL: 17 bảng + dữ liệu mẫu (sinh từ entity, đã validate)
+├── database/utelearn.sql            ← script MySQL: 23 bảng + dữ liệu mẫu (17 bảng gốc sinh từ entity, 6 bảng mới viết tay)
 ├── docs/                            ← báo cáo .docx, hình sơ đồ, ảnh chụp giao diện, datasheet prompt AI
 ├── hand-off.html                    ← file này
 └── src/main/
     ├── java/com/utelearn/
     │   ├── config/      SecurityConfig, WebSocketConfig, WebMvcConfig, DataSeeder
-    │   ├── security/    JwtUtil, JwtAuthFilter, CustomUserDetailsService
-    │   ├── entity/      17 entity + enum (Role, CourseStatus, CourseLevel, OrderStatus, PaymentMethod)
-    │   ├── repository/  17 repository
-    │   ├── service/     User, Category, Course, Curriculum, Enrollment, Cart, Order, Learning, Chat, FileUpload
-    │   ├── controller/  Home, Auth, Course, Cart, Order, Learning, Chat, Profile, GlobalModelAdvice
-    │   │   ├── instructor/  InstructorCourseController, InstructorCurriculumController
-    │   │   └── admin/       AdminDashboard, AdminUser, AdminCategory, AdminCourse
+    │   ├── security/    JwtUtil, JwtAuthFilter, CustomUserDetailsService, LoginEntryPoint
+    │   ├── entity/      23 entity + enum (Role, CourseStatus, CourseLevel, OrderStatus, PaymentMethod)
+    │   ├── repository/  23 repository
+    │   ├── service/     User, Category, Course, Curriculum, Enrollment, Cart, Order, Learning, Chat, FileUpload, Assignment, Coupon, Review,
+    │   │                Stats, Notification, Wishlist, LessonComment, Quiz, Certificate, PasswordReset, Email, VnPay, AiChat
+    │   ├── controller/  Home, Auth, Course, Cart, Order, Learning, Chat, Profile, Notification, Wishlist, Quiz, Certificate, VnPay, GlobalModelAdvice
+    │   │   ├── instructor/  InstructorCourse, InstructorCurriculum, InstructorAssignment, InstructorQuiz, InstructorRevenue
+    │   │   ├── admin/       AdminDashboard, AdminUser, AdminCategory, AdminCourse, AdminOrder, AdminCoupon
+    │   │   └── api/         ApiController (REST /api/**), AiChatController, ApiExceptionHandler
     │   ├── dto/         RegisterForm, ProfileForm, ChangePasswordForm, CourseForm, LessonForm, ChatMessageDto
     │   ├── exception/   BusinessException, NotFoundException (@ResponseStatus 404)
     │   └── util/        FormatUtil (bean "fmt": money, price, dateTime, duration, pageUrl)
@@ -216,53 +227,53 @@ java -jar target/utelearn-0.0.1-SNAPSHOT.jar --spring.profiles.active=h2</code><
   <li>Hiển thị tiền: <code>${@fmt.money(x)}</code> / <code>${@fmt.price(x)}</code> (0 → "Miễn phí"). Ngày: <code>${@fmt.dateTime(t)}</code>. Phân trang: <code>~{fragments/layout :: pagination(${page})}</code>.</li>
   <li>Trang mới copy khung từ trang có sẵn: <code>head(title)</code> → <code>navbar</code> → <code>main</code> (+ <code>flash</code>) → <code>footer</code>. Trang GV/admin có cột trái <code>instructorMenu('key')</code> / <code>adminMenu('key')</code>. Các mục "sắp có" trong menu là chỗ gắn chức năng mới.</li>
   <li>Upload file: luôn qua <code>FileUploadService</code> (<code>uploadImage</code>, <code>uploadVideo</code>, <code>uploadDocument</code> cho file pdf/doc/zip).</li>
-  <li>Đánh dấu chỗ chưa làm bằng comment <code>// TODO (hand-off): ...</code> — tìm nhanh: <code>grep -rn "TODO (hand-off)" src</code>.</li>
+  <li>Đánh dấu chỗ chưa làm bằng comment <code>// TODO (hand-off): ...</code> — tìm nhanh: <code>grep -rn "TODO (hand-off)" src</code> (hiện không còn chỗ nào).</li>
 </ul>
 
 <!-- =============================================================== -->
 <h2 id="chuc-nang">5. Bảng chức năng</h2>
-<p><span class="b done">XONG</span> chạy được, đã test · <span class="b part">MỘT PHẦN</span> có DB/khung, thiếu logic · <span class="b todo">CHƯA</span> mới có bảng CSDL hoặc chưa có gì.</p>
+<p><span class="b done">XONG</span> chạy được, đã test. Hiện cả 34 dòng đều XONG; MoMo và MySQL thật vẫn chưa làm/chưa test (mục 9).</p>
 <div class="tbl"><table>
 <tr><th>#</th><th>Nhóm</th><th>Chức năng</th><th>Trạng thái</th><th>File chính / ghi chú</th></tr>
 <tr><td>1</td><td>Tài khoản</td><td>Đăng ký (học viên)</td><td><span class="b done">XONG</span></td><td>AuthController, UserService.register, RegisterForm</td></tr>
 <tr><td>2</td><td>Tài khoản</td><td>Đăng nhập JWT (cookie HttpOnly) + phân quyền 3 vai trò</td><td><span class="b done">XONG</span></td><td>SecurityConfig, JwtUtil, JwtAuthFilter</td></tr>
 <tr><td>3</td><td>Tài khoản</td><td>Đăng xuất</td><td><span class="b done">XONG</span></td><td>POST /auth/logout xóa cookie</td></tr>
 <tr><td>4</td><td>Tài khoản</td><td>Hồ sơ cá nhân + avatar Cloudinary + đổi mật khẩu</td><td><span class="b done">XONG</span></td><td>ProfileController</td></tr>
-<tr><td>5</td><td>Tài khoản</td><td>Quên mật khẩu qua email (OTP)</td><td><span class="b todo">CHƯA</span></td><td>Bảng password_reset_tokens có sẵn — mục 8.6</td></tr>
+<tr><td>5</td><td>Tài khoản</td><td>Quên mật khẩu qua email</td><td><span class="b done">XONG</span></td><td>PasswordResetService, EmailService, <code>/auth/forgot-password</code>, <code>/auth/reset-password</code> — token UUID 15 phút, dùng 1 lần (mục 8.6). Đổi "OTP" thành link trong mail</td></tr>
 <tr><td>6</td><td>Khóa học</td><td>Trang chủ (danh mục, khóa mới)</td><td><span class="b done">XONG</span></td><td>HomeController</td></tr>
 <tr><td>7</td><td>Khóa học</td><td>Danh sách + tìm kiếm + lọc (danh mục, giá) + sắp xếp + phân trang</td><td><span class="b done">XONG</span></td><td>CourseRepository.search</td></tr>
 <tr><td>8</td><td>Khóa học</td><td>Chi tiết khóa học (giáo trình, GV, học thử)</td><td><span class="b done">XONG</span></td><td>course/detail.html</td></tr>
-<tr><td>9</td><td>Khóa học</td><td>Đánh giá &amp; xếp hạng (1–5 sao)</td><td><span class="b todo">CHƯA</span></td><td>Bảng reviews + ReviewRepository — mục 8.4</td></tr>
-<tr><td>10</td><td>Khóa học</td><td>Wishlist (yêu thích)</td><td><span class="b todo">CHƯA</span></td><td>Chưa có bảng — mục 8.12</td></tr>
+<tr><td>9</td><td>Khóa học</td><td>Đánh giá &amp; xếp hạng (1–5 sao)</td><td><span class="b done">XONG</span></td><td>ReviewService, <code>Course.averageRating/reviewCount</code> (<code>@Formula</code>, không N+1), form + danh sách ở course/detail.html (mục 8.4)</td></tr>
+<tr><td>10</td><td>Khóa học</td><td>Wishlist (yêu thích)</td><td><span class="b done">XONG</span></td><td>Wishlist, WishlistService, <code>/wishlist</code>, nút trái tim ở thẻ khóa học (mục 8.12)</td></tr>
 <tr><td>11</td><td>Mua bán</td><td>Giỏ hàng lưu DB</td><td><span class="b done">XONG</span></td><td>CartService</td></tr>
 <tr><td>12</td><td>Mua bán</td><td>Checkout + cổng thanh toán GIẢ LẬP + ghi danh</td><td><span class="b done">XONG</span></td><td>OrderService.checkout / confirmMockPayment / markPaid</td></tr>
-<tr><td>13</td><td>Mua bán</td><td>Thanh toán VNPay sandbox (hoặc MoMo)</td><td><span class="b todo">CHƯA</span></td><td>Enum PaymentMethod.VNPAY có sẵn — mục 8.1</td></tr>
-<tr><td>14</td><td>Mua bán</td><td>Mã giảm giá (coupon)</td><td><span class="b part">MỘT PHẦN</span></td><td>Bảng coupons, cột orders.coupon_id/discount_amount, ô nhập disabled ở giỏ — mục 8.2</td></tr>
+<tr><td>13</td><td>Mua bán</td><td>Thanh toán VNPay sandbox</td><td><span class="b done">XONG</span></td><td>VnPayService, VnPayController (<code>/payment/{code}/vnpay</code>, <code>/payment/vnpay-return</code>, <code>/payment/vnpay-ipn</code>) — mục 8.1. Chưa thử với sandbox thật của VNPay (xem mục 9)</td></tr>
+<tr><td>14</td><td>Mua bán</td><td>Mã giảm giá (coupon)</td><td><span class="b done">XONG</span></td><td>CouponService, AdminCouponController, <code>OrderService.checkout(user, couponCode)</code>, xem trước giảm giá ở giỏ — mục 8.2</td></tr>
 <tr><td>15</td><td>Mua bán</td><td>Lịch sử đơn hàng (học viên)</td><td><span class="b done">XONG</span></td><td>/orders, /orders/{code}</td></tr>
 <tr><td>16</td><td>Học tập</td><td>Khóa học của tôi + % tiến độ</td><td><span class="b done">XONG</span></td><td>/my-courses</td></tr>
 <tr><td>17</td><td>Học tập</td><td>Trang học bài (video Youtube/Cloudinary), đánh dấu hoàn thành, tính tiến độ, học thử</td><td><span class="b done">XONG</span></td><td>LearningService</td></tr>
 <tr><td>18</td><td>Học tập</td><td>Bài tập: GV giao, HV nộp file, GV chấm điểm + nhận xét</td><td><span class="b done">XONG</span></td><td>AssignmentService, InstructorAssignmentController, /learn/{id}/assignments — mục 8.3</td></tr>
-<tr><td>19</td><td>Học tập</td><td>Quiz trắc nghiệm</td><td><span class="b todo">CHƯA</span></td><td>Tùy chọn — mục 8.13</td></tr>
-<tr><td>20</td><td>Học tập</td><td>Chứng chỉ hoàn thành (PDF)</td><td><span class="b todo">CHƯA</span></td><td>Hook ở LearningService.updateProgress — mục 8.10</td></tr>
-<tr><td>21</td><td>Học tập</td><td>Hỏi đáp / bình luận dưới bài học</td><td><span class="b todo">CHƯA</span></td><td>Mục 8.11</td></tr>
+<tr><td>19</td><td>Học tập</td><td>Quiz trắc nghiệm</td><td><span class="b done">XONG</span></td><td>Quiz/QuizQuestion/QuizAttempt, QuizService, InstructorQuizController, QuizController — mục 8.13</td></tr>
+<tr><td>20</td><td>Học tập</td><td>Chứng chỉ hoàn thành (PDF)</td><td><span class="b done">XONG</span></td><td>Certificate, CertificateService (OpenPDF + font Be Vietnam Pro), CertificateController — mục 8.10</td></tr>
+<tr><td>21</td><td>Học tập</td><td>Hỏi đáp / bình luận dưới bài học</td><td><span class="b done">XONG</span></td><td>LessonComment, LessonCommentService, khối Hỏi đáp trong learn.html — mục 8.11</td></tr>
 <tr><td>22</td><td>Realtime</td><td>Chat 1-1 học viên ↔ giảng viên (WebSocket STOMP)</td><td><span class="b done">XONG</span></td><td>ChatController, chat.js</td></tr>
-<tr><td>23</td><td>Realtime</td><td>Thông báo realtime (chuông trên navbar)</td><td><span class="b todo">CHƯA</span></td><td>Bảng notifications — mục 8.5</td></tr>
+<tr><td>23</td><td>Realtime</td><td>Thông báo realtime (chuông trên navbar)</td><td><span class="b done">XONG</span></td><td>NotificationService, NotificationController, notification.js, chuông ở navbar — mục 8.5</td></tr>
 <tr><td>24</td><td>Giảng viên</td><td>CRUD khóa học + ảnh bìa + gửi duyệt</td><td><span class="b done">XONG</span></td><td>InstructorCourseController</td></tr>
 <tr><td>25</td><td>Giảng viên</td><td>CRUD chương / bài học + upload video</td><td><span class="b done">XONG</span></td><td>InstructorCurriculumController, CurriculumService</td></tr>
 <tr><td>26</td><td>Giảng viên</td><td>Xem học viên của khóa + tiến độ</td><td><span class="b done">XONG</span></td><td>/instructor/courses/{id}/students</td></tr>
 <tr><td>27</td><td>Giảng viên</td><td>Danh sách tin nhắn học viên</td><td><span class="b done">XONG</span></td><td>/instructor/chats</td></tr>
-<tr><td>28</td><td>Giảng viên</td><td>Thống kê doanh thu giảng viên</td><td><span class="b todo">CHƯA</span></td><td>Mục 8.8</td></tr>
+<tr><td>28</td><td>Giảng viên</td><td>Thống kê doanh thu giảng viên</td><td><span class="b done">XONG</span></td><td>InstructorRevenueController, StatsService, <code>/instructor/revenue</code> — mục 8.8</td></tr>
 <tr><td>29</td><td>Admin</td><td>Dashboard số liệu (đếm user, khóa, đơn, doanh thu)</td><td><span class="b done">XONG</span></td><td>AdminDashboardController</td></tr>
 <tr><td>30</td><td>Admin</td><td>Quản lý người dùng (tìm, khóa/mở, đổi vai trò)</td><td><span class="b done">XONG</span></td><td>AdminUserController</td></tr>
 <tr><td>31</td><td>Admin</td><td>Quản lý danh mục</td><td><span class="b done">XONG</span></td><td>AdminCategoryController</td></tr>
 <tr><td>32</td><td>Admin</td><td>Duyệt / từ chối khóa học (có lý do)</td><td><span class="b done">XONG</span></td><td>AdminCourseController</td></tr>
-<tr><td>33</td><td>Admin</td><td>Quản lý đơn hàng + biểu đồ doanh thu (Chart.js)</td><td><span class="b todo">CHƯA</span></td><td>Mục 8.7</td></tr>
-<tr><td>34</td><td>Sáng tạo</td><td>Chatbot AI tư vấn khóa học · REST API cho mobile</td><td><span class="b todo">CHƯA</span></td><td>Mục 8.9, 8.14 — cộng điểm "tính sáng tạo"</td></tr>
+<tr><td>33</td><td>Admin</td><td>Quản lý đơn hàng + biểu đồ doanh thu (Chart.js)</td><td><span class="b done">XONG</span></td><td>AdminOrderController, AdminDashboardController (3 biểu đồ Chart.js), StatsService — mục 8.7</td></tr>
+<tr><td>34</td><td>Sáng tạo</td><td>Chatbot AI tư vấn khóa học · REST API cho mobile</td><td><span class="b done">XONG</span></td><td>AiChatService + <code>POST /api/ai/chat</code> + widget chatbot.js (mục 8.9); REST API <code>/api/**</code>, đăng ký làm giảng viên, đổi thứ tự chương/bài, <code>?redirect=</code> (mục 8.14)</td></tr>
 </table></div>
 
 <!-- =============================================================== -->
 <h2 id="csdl">6. Cơ sở dữ liệu</h2>
-<p>File: <code>database/utelearn.sql</code>. DDL được viết lại gọn từ DDL Hibernate sinh ra (dialect MySQL) và đã kiểm tra bằng <code>ddl-auto=validate</code>; dữ liệu mẫu được xuất từ <code>DataSeeder</code> nên 2 nguồn khớp nhau. <b>Nếu sửa entity, nhớ sửa lại file SQL</b> (hoặc chạy app với <code>ddl-auto=update</code> rồi export lại).</p>
+<p>File: <code>database/utelearn.sql</code> (23 bảng). 17 bảng gốc được viết lại gọn từ DDL Hibernate sinh ra (dialect MySQL) và kiểm tra bằng <code>ddl-auto=validate</code>; 6 bảng thêm sau (<code>wishlists</code>, <code>lesson_comments</code>, <code>certificates</code>, <code>quizzes</code>, <code>quiz_questions</code>, <code>quiz_attempts</code>) được viết tay theo entity và đã chạy thử DDL trên H2 chế độ MySQL — <b>chưa chạy <code>ddl-auto=validate</code> và chưa nạp MySQL thật</b>; dữ liệu mẫu được xuất từ <code>DataSeeder</code> nên 2 nguồn khớp nhau. <b>Nếu sửa entity, nhớ sửa lại file SQL</b> (hoặc chạy app với <code>ddl-auto=update</code> rồi export lại).</p>
 <div class="tbl"><table>
 <tr><th>Bảng</th><th>Ý nghĩa</th><th>Quan hệ chính</th><th>Code dùng?</th></tr>
 <tr><td>users</td><td>Tài khoản, role ENUM(ADMIN, INSTRUCTOR, STUDENT), enabled</td><td>—</td><td><span class="b done">có</span></td></tr>
@@ -276,14 +287,20 @@ java -jar target/utelearn-0.0.1-SNAPSHOT.jar --spring.profiles.active=h2</code><
 <tr><td>orders</td><td>Đơn: order_code, total/discount/final, status, payment_method</td><td>user_id, coupon_id</td><td><span class="b done">có</span></td></tr>
 <tr><td>order_items</td><td>Chi tiết đơn, lưu giá lúc mua</td><td>order_id, course_id</td><td><span class="b done">có</span></td></tr>
 <tr><td>chat_messages</td><td>Tin nhắn; 1 cuộc chat = (course_id, student_id)</td><td>course, student, sender</td><td><span class="b done">có</span></td></tr>
-<tr><td>coupons</td><td>Mã giảm %, max_uses, used_count, expired_at</td><td>—</td><td><span class="b todo">chưa</span></td></tr>
-<tr><td>assignments</td><td>Bài tập (course, lesson tùy chọn, due_date, max_score)</td><td>course_id, lesson_id</td><td><span class="b todo">chưa</span></td></tr>
-<tr><td>submissions</td><td>Bài nộp (file_url, score NULL = chưa chấm, feedback); unique(assignment, student)</td><td>assignment_id, student_id</td><td><span class="b todo">chưa</span></td></tr>
-<tr><td>reviews</td><td>Đánh giá 1–5 sao; unique(course, user)</td><td>course_id, user_id</td><td><span class="b todo">chưa</span></td></tr>
-<tr><td>notifications</td><td>Thông báo (title, content, link, is_read)</td><td>user_id</td><td><span class="b todo">chưa</span></td></tr>
-<tr><td>password_reset_tokens</td><td>Token/OTP quên mật khẩu (expired_at, used)</td><td>user_id</td><td><span class="b todo">chưa</span></td></tr>
+<tr><td>coupons</td><td>Mã giảm %, max_uses, used_count, expired_at</td><td>—</td><td><span class="b done">có</span></td></tr>
+<tr><td>assignments</td><td>Bài tập (course, lesson tùy chọn, due_date, max_score)</td><td>course_id, lesson_id</td><td><span class="b done">có</span></td></tr>
+<tr><td>submissions</td><td>Bài nộp (file_url, score NULL = chưa chấm, feedback); unique(assignment, student)</td><td>assignment_id, student_id</td><td><span class="b done">có</span></td></tr>
+<tr><td>reviews</td><td>Đánh giá 1–5 sao; unique(course, user)</td><td>course_id, user_id</td><td><span class="b done">có</span></td></tr>
+<tr><td>notifications</td><td>Thông báo (title, content, link, is_read)</td><td>user_id</td><td><span class="b done">có</span></td></tr>
+<tr><td>wishlists</td><td>Khóa yêu thích; unique(user, course)</td><td>user_id, course_id</td><td><span class="b done">có</span></td></tr>
+<tr><td>lesson_comments</td><td>Hỏi đáp dưới bài học; parent_id NULL = câu hỏi, có giá trị = trả lời (1 cấp)</td><td>lesson_id, user_id, parent_id</td><td><span class="b done">có</span></td></tr>
+<tr><td>certificates</td><td>Chứng chỉ; code công khai, unique(enrollment). <b>Không có cột pdf_url</b> — PDF sinh lại mỗi lần tải</td><td>enrollment_id</td><td><span class="b done">có</span></td></tr>
+<tr><td>quizzes</td><td>Quiz cuối chương (mỗi chương tối đa 1), pass_percent</td><td>section_id</td><td><span class="b done">có</span></td></tr>
+<tr><td>quiz_questions</td><td>Câu hỏi 4 đáp án, correct_option 1..4</td><td>quiz_id</td><td><span class="b done">có</span></td></tr>
+<tr><td>quiz_attempts</td><td>Mỗi lần làm bài: score, total, passed, answers "idCâu:đápÁn,…"</td><td>quiz_id, user_id</td><td><span class="b done">có</span></td></tr>
+<tr><td>password_reset_tokens</td><td>Token/OTP quên mật khẩu (expired_at, used)</td><td>user_id</td><td><span class="b done">có</span></td></tr>
 </table></div>
-<p class="muted">Repository cho các bảng "chưa" đã có sẵn vài method gợi ý (vd <code>ReviewRepository.averageRating</code>, <code>SubmissionRepository.findByAssignmentAndStudent</code>).</p>
+<p class="muted">Cột tính sẵn <code>Course.averageRating</code>/<code>reviewCount</code> là <code>@Formula</code> (subquery trong SELECT), không có cột thật trong bảng <code>courses</code>.</p>
 
 <!-- =============================================================== -->
 <h2 id="routes">7. Danh sách URL đã có</h2>
@@ -306,14 +323,24 @@ java -jar target/utelearn-0.0.1-SNAPSHOT.jar --spring.profiles.active=h2</code><
 <tr><td>GV/Admin</td><td>GET <code>/instructor/assignments</code>, <code>/instructor/courses/{id}/assignments</code>, GET/POST <code>/courses/{id}/assignments/new</code>, <code>/assignments/{id}/edit</code>; POST <code>/assignments/{id}/delete</code>; GET <code>/assignments/{id}/submissions</code>; POST <code>/submissions/{id}/grade</code></td><td>Bài tập &amp; chấm điểm</td></tr>
 <tr><td>GV/Admin</td><td>GET <code>/instructor/chats</code>, <code>/instructor/chats/{courseId}/{studentId}</code></td><td>Tin nhắn</td></tr>
 <tr><td>Admin</td><td><code>/admin</code>, <code>/admin/users</code> (+<code>/{id}/toggle</code>, <code>/{id}/role</code>), <code>/admin/categories</code> (+<code>/save</code>, <code>/{id}/delete</code>), <code>/admin/courses?status</code> (+<code>/{id}/approve</code>, <code>/{id}/reject</code>)</td><td>Quản trị</td></tr>
-<tr><td>WebSocket</td><td>Endpoint <code>/ws</code> (SockJS) · gửi <code>/app/chat.send</code> · nhận <code>/user/queue/messages</code>, lỗi <code>/user/queue/errors</code></td><td>Chat</td></tr>
+<tr><td>Public</td><td>GET/POST <code>/auth/forgot-password</code>, <code>/auth/reset-password?token=</code>; GET <code>/certificates/{code}</code>, <code>/certificates/{code}/download</code></td><td>Quên mật khẩu · xác thực/tải chứng chỉ</td></tr>
+<tr><td>Public</td><td>GET <code>/payment/vnpay-return</code>, <code>/payment/vnpay-ipn</code> (JSON); POST <code>/api/ai/chat</code> (body <code>{message, history}</code> → <code>{reply, mode}</code>, tối đa 20 tin/10 phút/IP)</td><td>VNPay gọi về · chatbot</td></tr>
+<tr><td>Đăng nhập</td><td>POST <code>/payment/{code}/vnpay</code>; GET <code>/cart?couponCode=</code> (xem trước mã giảm); POST <code>/checkout</code> (kèm <code>couponCode</code>)</td><td>VNPay · coupon</td></tr>
+<tr><td>Đăng nhập</td><td>GET <code>/wishlist</code>; POST <code>/wishlist/toggle/{courseId}</code>; POST <code>/courses/{id}/reviews</code>, <code>/courses/{id}/reviews/delete</code></td><td>Yêu thích · đánh giá</td></tr>
+<tr><td>Đăng nhập</td><td>GET <code>/notifications</code>, <code>/notifications/{id}/go</code>; POST <code>/notifications/read-all</code></td><td>Thông báo</td></tr>
+<tr><td>Đăng nhập</td><td>POST <code>/learn/{c}/lessons/{l}/comments</code>, <code>/learn/{c}/comments/{id}/delete</code>; GET <code>/learn/{c}/quizzes/{q}</code>, POST <code>…/submit</code>, GET <code>…/attempts/{id}</code> (làm bài, kết quả); POST <code>/profile/become-instructor</code></td><td>Hỏi đáp · quiz · đăng ký làm giảng viên</td></tr>
+<tr><td>GV/Admin</td><td>GET <code>/instructor/revenue</code>; GET/POST <code>/instructor/sections/{id}/quiz</code>, POST <code>/instructor/quizzes/{id}/delete</code>, <code>/instructor/quizzes/{id}/questions</code> (quiz của chương); POST <code>/instructor/sections/{id}/move</code>, <code>/instructor/lessons/{id}/move</code> (nút lên/xuống ở <code>curriculum.html</code>)</td><td>Doanh thu · quiz · sắp xếp</td></tr>
+<tr><td>Admin</td><td><code>/admin/orders</code> (lọc trạng thái, ngày, từ khóa), <code>/admin/orders/{code}</code>; <code>/admin/coupons</code> (CRUD); dashboard có 3 biểu đồ Chart.js</td><td>Đơn hàng · coupon · thống kê</td></tr>
+<tr><td>REST (JWT Bearer)</td><td>POST <code>/api/auth/login</code> (→ token JSON); GET <code>/api/me</code>, <code>/api/categories</code>, <code>/api/courses</code>, <code>/api/courses/{id}</code>, <code>/api/my-courses</code></td><td>API cho mobile (CSRF bỏ qua <code>/api/**</code>, lỗi trả JSON 401/403)</td></tr>
+<tr><td>WebSocket</td><td>Endpoint <code>/ws</code> (SockJS) · gửi <code>/app/chat.send</code> · nhận <code>/user/queue/messages</code>, lỗi <code>/user/queue/errors</code>, thông báo <code>/user/queue/notifications</code></td><td>Chat + thông báo</td></tr>
 </table></div>
 
 <!-- =============================================================== -->
-<h2 id="todo">8. Spec chi tiết phần còn lại</h2>
-<p>Mỗi mục ghi: file cần tạo, route, logic, tiêu chí xong. Làm theo đúng quy ước mục 4.</p>
+<h2 id="todo">8. Spec chi tiết (tất cả đã triển khai)</h2>
+<p>Giữ lại spec gốc để đối chiếu. Dưới mỗi mục có ghi chú <b>"Đã làm"</b>: cách làm thực tế và chỗ khác spec. Mọi mục đã được test bằng script Python trên H2 (mục 11).</p>
 
-<h3>8.1 Thanh toán VNPay sandbox <span class="b todo">ưu tiên cao</span></h3>
+<h3>8.1 Thanh toán VNPay sandbox <span class="b done">XONG 03/10</span></h3>
+<p class="muted"><b>Đã làm:</b> VnPayService (dựng URL + ký/verify HMAC-SHA512), VnPayController, <code>OrderService.prepareVnPayPayment/applyVnPayResult</code>, trang <code>order/vnpay-result.html</code>. Nút VNPay chỉ hiện khi đã đặt <code>VNPAY_TMN_CODE</code>/<code>VNPAY_HASH_SECRET</code>. Thêm endpoint IPN <code>/payment/vnpay-ipn</code> (trả JSON <code>RspCode</code>) ngoài spec; kiểm tra số tiền khớp, đơn đã PAID thì không xử lý lại. <b>Khác spec/giới hạn:</b> chỉ test bằng secret giả + script Python tự tính lại chữ ký độc lập với code Java (26 bước); <b>chưa gọi sandbox thật của VNPay</b> (cần đăng ký merchant). Khi demo thật nhớ đặt <code>APP_BASE_URL</code> đúng cổng đang chạy.</p>
 <ul>
   <li>Đăng ký tài khoản test tại <code>sandbox.vnpayment.vn</code> → lấy <code>vnp_TmnCode</code>, <code>vnp_HashSecret</code>. Thêm vào <code>application.properties</code>: <code>vnpay.tmn-code</code>, <code>vnpay.hash-secret</code>, <code>vnpay.pay-url=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html</code>, <code>vnpay.return-url=http://localhost:8080/payment/vnpay-return</code> (dùng biến môi trường, không commit secret).</li>
   <li>Tạo <code>service/VnPayService</code>: <code>createPaymentUrl(Order, HttpServletRequest)</code> — tham số <code>vnp_Version=2.1.0, vnp_Command=pay, vnp_Amount=finalAmount*100, vnp_CurrCode=VND, vnp_TxnRef=orderCode, vnp_OrderInfo, vnp_OrderType=other, vnp_Locale=vn, vnp_ReturnUrl, vnp_IpAddr, vnp_CreateDate (yyyyMMddHHmmss, GMT+7)</code>; sắp xếp key A→Z, URL-encode, ký <b>HMAC-SHA512</b> bằng hashSecret → <code>vnp_SecureHash</code>.</li>
@@ -322,7 +349,8 @@ java -jar target/utelearn-0.0.1-SNAPSHOT.jar --spring.profiles.active=h2</code><
   <li>Xong khi: thanh toán bằng thẻ test NCB của VNPay → đơn PAID, khóa vào "Khóa học của tôi"; sửa tham số trên URL return → báo lỗi chữ ký.</li>
 </ul>
 
-<h3>8.2 Mã giảm giá</h3>
+<h3>8.2 Mã giảm giá <span class="b done">XONG 03/10</span></h3>
+<p class="muted"><b>Đã làm:</b> CouponService.validate, AdminCouponController + <code>admin/coupons.html</code> (mã đã dùng thì không xóa được), <code>Coupon.isExpired/isOutOfUses</code>. <b>Khác spec:</b> xem trước mức giảm bằng <code>GET /cart?couponCode=</code> (không cần JS); <code>usedCount</code> chỉ tăng ở <code>markPaid</code> nên cả mock lẫn VNPay đều tính đúng.</p>
 <ul>
   <li>Admin: <code>controller/admin/AdminCouponController</code> + <code>templates/admin/coupons.html</code> (CRUD, giống trang danh mục). Bật mục "Mã giảm giá" trong <code>adminMenu</code>.</li>
   <li><code>CouponService.validate(code)</code>: tồn tại, <code>active</code>, chưa hết hạn, <code>maxUses == 0 || usedCount &lt; maxUses</code>.</li>
@@ -341,54 +369,69 @@ java -jar target/utelearn-0.0.1-SNAPSHOT.jar --spring.profiles.active=h2</code><
   <li>Xong khi: GV tạo bài → HV nộp file → GV chấm → HV thấy điểm; HV chưa mua khóa không nộp được.</li>
 </ul>
 
-<h3>8.4 Đánh giá khóa học</h3>
+<h3>8.4 Đánh giá khóa học <span class="b done">XONG 03/10</span></h3>
+<p class="muted"><b>Đã làm:</b> ReviewService (đã ghi danh mới được đánh giá, 1 người 1 đánh giá, sửa/xóa được). <b>Khác spec:</b> thay vì query GROUP BY riêng, <code>Course</code> có 2 trường <code>@Formula</code> (<code>averageRating</code>, <code>reviewCount</code>) nên thẻ khóa học không bị N+1; fragment <code>stars(avg)</code> trong layout.html.</p>
 <ul>
   <li>Chỉ học viên đã ghi danh mới được đánh giá, mỗi người 1 lần (có unique), cho sửa.</li>
   <li>POST <code>/courses/{id}/reviews</code> (rating 1–5, comment). Hiển thị ở <code>course/detail.html</code> chỗ có TODO: điểm TB (<code>ReviewRepository.averageRating</code>), số lượt, danh sách.</li>
   <li>Thêm số sao trung bình vào <code>courseCard</code> (cẩn thận N+1 — nên viết 1 query <code>SELECT r.course.id, AVG(r.rating) ... GROUP BY r.course.id</code>).</li>
 </ul>
 
-<h3>8.5 Thông báo realtime</h3>
+<h3>8.5 Thông báo realtime <span class="b done">XONG 03/10</span></h3>
+<p class="muted"><b>Đã làm:</b> NotificationService.notify (lưu DB, đẩy WebSocket sau khi commit), chuông + dropdown 10 mục trên navbar, trang <code>/notifications</code>, <code>notification.js</code> dùng chung 1 kết nối STOMP (chat.html không tự kết nối nữa). Phát thông báo ở: duyệt/từ chối/gửi duyệt khóa, thanh toán thành công, tin nhắn chat mới, nộp/chấm bài tập, hỏi đáp, chứng chỉ. Bấm thông báo → đánh dấu đã đọc rồi chuyển tới link.</p>
 <ul>
   <li><code>NotificationService.notify(user, title, content, link)</code>: lưu DB + <code>messagingTemplate.convertAndSendToUser(email, "/queue/notifications", dto)</code>.</li>
   <li>Gọi ở: duyệt/từ chối khóa (<code>CourseService.approve/reject</code> có TODO), thanh toán thành công, có tin nhắn mới, bài tập được chấm.</li>
   <li>Navbar: icon chuông + số chưa đọc (<code>countByUserAndReadFalse</code>, thêm vào <code>GlobalModelAdvice</code>), dropdown 10 thông báo mới nhất; file <code>static/js/notification.js</code> kết nối <code>/ws</code> trên mọi trang khi đã đăng nhập. Hiện tại <code>chat.js</code> tự kết nối — có thể gộp 1 kết nối dùng chung.</li>
 </ul>
 
-<h3>8.6 Quên mật khẩu</h3>
+<h3>8.6 Quên mật khẩu <span class="b done">XONG 03/10</span></h3>
+<p class="muted"><b>Đã làm:</b> PasswordResetService (token UUID, 15 phút, dùng 1 lần, yêu cầu mới thì token cũ hết hiệu lực, không tiết lộ email có tồn tại), EmailService. Chưa cấu hình <code>MAIL_USERNAME</code> thì nội dung mail in ra log (tìm "reset-password?token=" trong log) — chưa thử gửi qua Gmail thật.</p>
 <ul>
   <li>Thêm <code>spring-boot-starter-mail</code>, cấu hình SMTP Gmail (App Password) qua biến môi trường.</li>
   <li>GET/POST <code>/auth/forgot-password</code> (nhập email → tạo token UUID hoặc OTP 6 số, hết hạn 15 phút, gửi mail) → GET/POST <code>/auth/reset-password?token=</code> (đặt mật khẩu mới, đánh dấu <code>used</code>). Không tiết lộ email có tồn tại hay không.</li>
   <li>Thay chữ "Quên mật khẩu? (sắp có)" trong <code>auth/login.html</code> bằng link.</li>
 </ul>
 
-<h3>8.7 Admin: đơn hàng + biểu đồ doanh thu</h3>
+<h3>8.7 Admin: đơn hàng + biểu đồ doanh thu <span class="b done">XONG 03/10</span></h3>
+<p class="muted"><b>Đã làm:</b> AdminOrderController (lọc trạng thái/ngày/từ khóa, phân trang, chi tiết), StatsService (doanh thu 12 tháng, top 5 khóa bán chạy, khóa theo danh mục), Chart.js 4.4.1 từ cdnjs (cần Internet khi xem dashboard).</p>
 <ul>
   <li><code>/admin/orders</code>: lọc theo trạng thái, ngày, tìm theo mã đơn/email, phân trang; xem chi tiết.</li>
   <li>Dashboard: Chart.js (CDN <code>cdnjs</code>) — doanh thu 12 tháng (query <code>SUM(final_amount) GROUP BY YEAR, MONTH</code> với status PAID), top 5 khóa bán chạy, tỉ lệ khóa theo danh mục. Truyền dữ liệu qua <code>th:inline="javascript"</code>. Chỗ có TODO trong <code>AdminDashboardController</code>.</li>
 </ul>
 
-<h3>8.8 Giảng viên: doanh thu</h3>
+<h3>8.8 Giảng viên: doanh thu <span class="b done">XONG 03/10</span></h3>
+<p class="muted"><b>Đã làm:</b> <code>/instructor/revenue</code>: tổng, theo tháng, theo khóa (chỉ đơn PAID, chỉ khóa của mình).</p>
 <ul><li><code>/instructor/revenue</code>: tổng doanh thu từ <code>order_items</code> của khóa mình (order PAID), theo tháng + theo khóa. Bật mục "Doanh thu" trong <code>instructorMenu</code>.</li></ul>
 
-<h3>8.9 Chatbot AI tư vấn khóa học <span class="b todo">sáng tạo</span></h3>
+<h3>8.9 Chatbot AI tư vấn khóa học <span class="b done">XONG 03/10</span></h3>
+<p class="muted"><b>Đã làm:</b> AiChatService gọi Claude Messages API (<code>claude-haiku-4-5-20251001</code>) qua <code>java.net.http</code>, system prompt chứa tối đa 60 khóa PUBLISHED mới nhất (không có khóa nháp/chờ duyệt); widget <code>chatbot.js</code> ở trang chủ, danh sách và chi tiết khóa. Chống lạm dụng: tối đa 500 ký tự/tin, 6 lượt lịch sử, 20 tin/10 phút/IP (429). Không có key hoặc API lỗi → <b>tự chuyển sang gợi ý theo từ khóa</b> (response có <code>mode: "fallback"</code>), widget vẫn dùng được. Test AI bằng server Anthropic giả ở cổng 9099 (8 bước) — <b>chưa gọi API thật</b>.</p>
 <ul>
   <li>Widget nổi góc phải trang chủ/trang khóa học. Backend <code>POST /api/ai/chat</code> gọi API LLM (vd Claude API) với system prompt chứa danh sách khóa PUBLISHED (tên, giá, mô tả ngắn) để gợi ý khóa phù hợp. API key để ở biến môi trường, không commit.</li>
 </ul>
 
-<h3>8.10 Chứng chỉ hoàn thành</h3>
+<h3>8.10 Chứng chỉ hoàn thành <span class="b done">XONG 03/10</span></h3>
+<p class="muted"><b>Đã làm:</b> Tự cấp khi tiến độ đạt 100% (hook trong <code>LearningService.updateProgress</code>). PDF khổ A4 ngang tạo bằng OpenPDF với font Be Vietnam Pro nhúng sẵn (<code>resources/fonts</code>, giấy phép OFL) nên tiếng Việt có dấu hiển thị đúng. <b>Khác spec:</b> bảng <code>certificates</code> <b>không có cột <code>pdf_url</code></b> — PDF sinh lại theo yêu cầu từ (tên HV, khóa, ngày, mã); trang <code>/certificates/{code}</code> công khai để xác thực (không cần đăng nhập).</p>
 <ul><li>Khi <code>progressPercent</code> lên 100 (chỗ TODO trong <code>LearningService.updateProgress</code>): sinh PDF (thư viện OpenPDF hoặc Flying Saucer từ template HTML) có tên HV, khóa, ngày, mã chứng chỉ; GET <code>/certificates/{code}</code> để tải/xác thực. Cần thêm bảng <code>certificates</code> (enrollment_id unique, code, issued_at, pdf_url) → cập nhật <code>utelearn.sql</code>.</li></ul>
 
-<h3>8.11 Hỏi đáp dưới bài học</h3>
+<h3>8.11 Hỏi đáp dưới bài học <span class="b done">XONG 03/10</span></h3>
+<p class="muted"><b>Đã làm:</b> LessonCommentService; ghi danh hoặc chủ khóa/admin mới đăng được; chỉ 1 cấp trả lời; GV có nhãn "Giảng viên"; tác giả/chủ khóa/admin xóa được; xóa bài/chương/khóa dọn luôn bình luận.</p>
 <ul><li>Bảng mới <code>lesson_comments</code> (lesson_id, user_id, parent_id, content, created_at). Hiển thị dưới nội dung bài học (chỗ TODO trong <code>learn.html</code>); GV trả lời có nhãn "Giảng viên".</li></ul>
 
-<h3>8.12 Wishlist</h3>
+<h3>8.12 Wishlist <span class="b done">XONG 03/10</span></h3>
+<p class="muted"><b>Đã làm:</b> WishlistService + <code>POST /wishlist/toggle/{id}</code> (bật/tắt), trang <code>/wishlist</code>, trái tim ở thẻ khóa học và trang chi tiết; <code>wishlistIds</code> có sẵn ở mọi trang qua GlobalModelAdvice.</p>
 <ul><li>Bảng mới <code>wishlists</code> (user_id, course_id unique). Nút trái tim ở <code>courseCard</code> + trang <code>/wishlist</code>.</li></ul>
 
-<h3>8.13 Quiz trắc nghiệm (tùy chọn)</h3>
+<h3>8.13 Quiz trắc nghiệm <span class="b done">XONG 03/10</span></h3>
+<p class="muted"><b>Đã làm:</b> Mỗi chương tối đa 1 quiz; GV soạn câu hỏi 4 đáp án ở <code>instructor/quiz.html</code>; HV làm bài (làm lại không giới hạn, mỗi lần lưu 1 bản ghi để xem lại), đạt khi % đúng ≥ pass_percent; chỉ HV đã ghi danh mới làm được; đáp án đúng chỉ lộ sau khi nộp.</p>
 <ul><li>Bảng <code>quizzes</code>, <code>quiz_questions</code> (4 đáp án, đáp án đúng), <code>quiz_attempts</code>. Gắn quiz cuối mỗi chương.</li></ul>
 
-<h3>8.14 Cải tiến nhỏ khác</h3>
+<h3>8.14 Cải tiến nhỏ khác <span class="b done">XONG 03/10</span></h3>
+<p class="muted"><b>Đã làm:</b> (1) <code>LoginEntryPoint</code> chuyển tới <code>/auth/login?redirect=…</code> (chỉ nhận đường dẫn nội bộ, chặn open-redirect <code>//evil.com</code>); URL <code>/api/**</code> chưa đăng nhập trả JSON 401.
+ (2) Nút lên/xuống đổi thứ tự chương/bài (<code>CurriculumService.moveSection/moveLesson</code>) thay cho kéo thả.
+ (3) <b>Quyết định:</b> khóa PUBLISHED được GV sửa vẫn giữ PUBLISHED, không duyệt lại.
+ (4) REST API: <code>dto/ApiDtos</code>, <code>controller/api/ApiController</code>, <code>ApiExceptionHandler</code> (6 endpoint, mục 7).
+ (5) Checkbox "Tôi muốn trở thành giảng viên" ở form đăng ký + nút "Trở thành giảng viên" ở hồ sơ (<code>POST /profile/become-instructor</code>).</p>
 <ul>
   <li>Đăng nhập xong quay lại trang trước (lưu <code>?redirect=</code> khi bị chặn, chỉ cho phép đường dẫn bắt đầu bằng <code>/</code>).</li>
   <li>Đổi thứ tự chương/bài (nút lên/xuống hoặc kéo thả SortableJS) — chỗ TODO trong <code>instructor/curriculum.html</code>.</li>
@@ -400,8 +443,13 @@ java -jar target/utelearn-0.0.1-SNAPSHOT.jar --spring.profiles.active=h2</code><
 <!-- =============================================================== -->
 <h2 id="luu-y">9. Lưu ý / nợ kỹ thuật</h2>
 <div class="card danger"><b>Chưa chạy thử trên MySQL thật</b> (máy dev không có MySQL server). File <code>utelearn.sql</code> và app chỉ được kiểm tra trên H2 chế độ MySQL. Việc đầu tiên nên làm: import SQL vào MySQL 8 và chạy smoke test lại.</div>
+<div class="card warn"><b>Chưa thử với dịch vụ ngoài thật:</b> VNPay sandbox (chỉ test chữ ký bằng secret giả), Claude API (chỉ test với server giả), Gmail SMTP (mới in log), Cloudinary (chỉ chế độ local). Cấu hình đúng biến môi trường ở mục 2 rồi chạy thử trước ngày bảo vệ.</div>
 <ul>
-  <li><b>CSRF</b>: bật, token lưu cookie <code>XSRF-TOKEN</code> (<code>CookieCsrfTokenRepository</code>), bỏ qua <code>/ws/**</code> (SockJS). <b>Không xóa dòng <code>sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy())</code></b> trong <code>SecurityConfig</code> — xóa là lỗi #1 mục 13 quay lại. Nếu viết AJAX POST phải gửi header <code>X-XSRF-TOKEN</code>.</li>
+  <li><b>Test của mục 8 là script ngoài repo</b> (viết bằng Python <code>requests</code>, để ở thư mục tạm của máy dev); trong repo vẫn chưa có unit test. Có thể chép lại thành test tích hợp khi cần.</li>
+  <li>Quên mật khẩu: link đặt lại dùng <code>app.base-url</code>; bản deploy phải đặt <code>APP_BASE_URL</code>. Chatbot là endpoint công khai nên giới hạn tốc độ nằm trong RAM theo IP (đứng sau proxy thì IP là của proxy).</li>
+  <li><code>PaymentMethod.MOMO</code> vẫn chỉ là enum dự phòng, chưa tích hợp.</li>
+  <li><code>database/utelearn.sql</code> thiếu dữ liệu mẫu cho các bảng mới (ví dụ chưa có đánh giá/coupon/quiz mẫu); app tạo bảng thiếu nhờ <code>ddl-auto=update</code>. Seed riêng: coupon không có sẵn — tạo ở <code>/admin/coupons</code> khi demo.</li>
+  <li><b>CSRF</b>: bật, token lưu cookie <code>XSRF-TOKEN</code> (<code>CookieCsrfTokenRepository</code>), bỏ qua <code>/ws/**</code> (SockJS) và <code>/api/**</code> (REST dùng Bearer). <b>Không xóa dòng <code>sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy())</code></b> trong <code>SecurityConfig</code> — xóa là lỗi #1 mục 13 quay lại. Nếu viết AJAX POST phải gửi header <code>X-XSRF-TOKEN</code>.</li>
   <li><b>JWT</b>: hết hạn 1 ngày, không có refresh token; đăng xuất chỉ xóa cookie (token cũ vẫn hợp lệ đến khi hết hạn). Secret mặc định nằm trong properties — khi deploy phải đặt <code>JWT_SECRET</code>.</li>
   <li><code>JwtAuthFilter</code> load user từ DB mỗi request để tài khoản bị khóa bị đá ra ngay — chấp nhận được với đồ án.</li>
   <li><code>GlobalModelAdvice</code> chạy 2 query (user + đếm giỏ) cho mọi request kể cả POST.</li>
@@ -419,7 +467,7 @@ java -jar target/utelearn-0.0.1-SNAPSHOT.jar --spring.profiles.active=h2</code><
 <p>Đề bài yêu cầu file <b>.docx</b> gồm: hình kiến trúc ứng dụng, sơ đồ hoạt động từng chức năng + hình diễn giải source code, hình diễn giải giao diện, hướng dẫn setup, danh sách prompt AI đã dùng; kèm Source Code + Database (.sql) + datasheet AI.</p>
 <div class="tbl"><table>
 <tr><th>Hạng mục</th><th>Trạng thái</th><th>Vị trí</th></tr>
-<tr><td>Source code</td><td><span class="b part">50%</span></td><td><code>src/</code></td></tr>
+<tr><td>Source code</td><td><span class="b done">XONG</span></td><td><code>src/</code></td></tr>
 <tr><td>Database .sql</td><td><span class="b done">XONG</span> (đủ 17 bảng)</td><td><code>database/utelearn.sql</code></td></tr>
 <tr><td>Hình kiến trúc + ERD + use case</td><td><span class="b done">XONG</span></td><td><code>docs/images/diagrams/01..04-*.png</code> (nguồn Mermaid: <code>docs/diagrams/*.mmd</code>)</td></tr>
 <tr><td>Sơ đồ hoạt động từng chức năng đã làm (11 hình)</td><td><span class="b done">XONG</span></td><td><code>docs/images/diagrams/10..20-hd-*.png</code></td></tr>
@@ -478,21 +526,22 @@ java -jar target/utelearn-0.0.1-SNAPSHOT.jar --spring.profiles.active=h2</code><
   <li><code>database/utelearn.sql</code> nạp vào H2 (MySQL mode) + chạy app với <code>ddl-auto=validate</code>: schema khớp entity, đăng nhập bằng tài khoản trong SQL được.</li>
   <li>Test end-to-end bằng <b>trình duyệt thật</b> (Edge headless, <code>shots.js</code>): khách → học viên (thêm giỏ, thanh toán, học, chat) → giảng viên → admin, 31 trang. Chính bước này phát hiện lỗi CSRF #1 ở mục 13 (curl không phát hiện được vì không tải CSS/JS). Sau khi sửa: toàn bộ luồng chạy đúng, smoke test + test WebSocket chạy lại đều pass.</li>
   <li><b>03/10 — bài tập (35 bước, script Python requests, H2):</b> GV tạo bài (validate tên trống, chặn file .exe, gắn bài học, có hạn nộp) → HV nộp file (bắt buộc file lần đầu, nộp lại giữ file cũ, chặn quá hạn) → GV chấm (chặn điểm &gt; tối đa) → HV thấy điểm + nhận xét, không nộp lại được. Phân quyền: GV khác 403, HV chưa mua không xem/nộp được. Xóa bài học có gắn bài tập, xóa bài tập có bài nộp, xóa khóa nháp có bài tập: không lỗi khóa ngoại. Tất cả pass.</li>
-  <li><b>03/10 — chạy lại <code>docs/tools/smoke.sh</code></b> trên DB H2 mới: 70/72. Phải đặt <code>AVATAR=&lt;đường dẫn ảnh png&gt;</code>, để mặc định <code>/dev/null</code> thì curl trên Windows lỗi ở các bước upload. 2 bước fail (<code>GET /learn/3 (chưa mua)</code> trả 200 thay vì 302, và <code>lý do từ chối</code>) fail y hệt trên code trước khi làm bài tập → không phải do 8.3, chưa điều tra.</li>
+  <li><b>03/10 — chạy lại <code>docs/tools/smoke.sh</code></b> trên DB H2 mới: 70/72. Phải đặt <code>AVATAR=&lt;đường dẫn ảnh png&gt;</code>, để mặc định <code>/dev/null</code> thì curl trên Windows lỗi ở các bước upload. 2 bước fail (<code>GET /learn/3 (chưa mua)</code> trả 200 thay vì 302, và <code>lý do từ chối</code>) fail y hệt trên code gốc, trước cả mục 8 → không do các chức năng mới, chưa điều tra.</li>
+  <li><b>03/10 — test từng chức năng mục 8 + chạy lại hồi quy trên DB H2 mới (khởi động lại app trước mỗi script):</b>
+    coupon 23/23 · đánh giá 14/14 · thống kê/biểu đồ/doanh thu 24/24 · thông báo realtime (STOMP) 22/23 · wishlist + hỏi đáp 25/25 · quên mật khẩu 18/19 · VNPay 26/26 · chứng chỉ (kể cả đọc chữ trong PDF bằng <code>pdftotext</code>, render ảnh kiểm tra font) 15/15 ·
+    tiện ích 8.14 (redirect, API, đổi thứ tự, làm giảng viên) 47/48 · quiz 35/35 · chatbot 15/15 (không key) + 8/8 (server AI giả) · bài tập 35/35 · <code>smoke.sh</code> 70/72 như trước. Không có dòng <code>ERROR</code> nào trong log app.
+    3 bước "fail" (thông báo → link, token đã dùng, thứ tự sidebar) là do câu assert của script test (header <code>Location</code> tuyệt đối, trang trả về khác kỳ vọng, regex lỏng); đã kiểm tra tay lại, app đúng.</li>
   <li>Chưa test: MySQL thật, upload lên Cloudinary thật (chỉ test chế độ lưu local), test tay trên điện thoại thật (mới chụp 1 trang ở khổ 390px).</li>
 </ul>
 
 <!-- =============================================================== -->
 <h2 id="thu-tu">12. Thứ tự làm tiếp đề xuất</h2>
+<p>Toàn bộ mục 8 đã xong. Còn lại:</p>
 <ol>
-  <li>Import SQL vào MySQL thật, chạy lại toàn bộ luồng (mục 11).</li>
-  <li><s>8.3 Bài tập &amp; chấm điểm</s> — xong 03/10.</li>
-  <li>8.1 VNPay sandbox.</li>
-  <li>8.4 Đánh giá, 8.2 Coupon.</li>
-  <li>8.5 Thông báo realtime, 8.7 Biểu đồ admin, 8.8 Doanh thu GV.</li>
-  <li>8.6 Quên mật khẩu.</li>
-  <li>Sáng tạo: 8.9 Chatbot AI, 8.10 Chứng chỉ PDF, 8.11 Hỏi đáp (tiêu chí 5 chấm theo số nội dung ngoài chương trình).</li>
-  <li>Ghép <code>docs/BaoCao_UTELearn.docx</code> từ hình có sẵn (mục 10) + làm datasheet prompt; push GitHub, mở PR <code>dev → main</code>.</li>
+  <li>Import <code>database/utelearn.sql</code> vào MySQL 8 thật, chạy app với <code>ddl-auto=validate</code> (kiểm tra 6 bảng mới) và chạy lại luồng chính + <code>smoke.sh</code>.</li>
+  <li>Đặt thử khóa thật: <code>VNPAY_*</code> (thanh toán thẻ NCB test), <code>ANTHROPIC_API_KEY</code>, <code>MAIL_*</code>; chụp ảnh các trang mới (<code>docs/tools/shots.js</code>) cho báo cáo.</li>
+  <li>(Tùy chọn) Thêm dữ liệu mẫu cho coupon/đánh giá/quiz vào <code>DataSeeder</code> và <code>utelearn.sql</code>; thêm unit test; tích hợp MoMo.</li>
+  <li>Ghép <code>docs/BaoCao_UTELearn.docx</code> từ hình có sẵn (mục 10) + làm datasheet prompt; push GitHub, mở PR <code>dev → main</code>. Mục 8 đã commit theo từng chức năng trên nhánh <code>dev</code> (chưa push).</li>
 </ol>
 
 <!-- =============================================================== -->

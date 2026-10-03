@@ -1,10 +1,10 @@
 # Kinh doanh khóa học trực tuyến và quản lý học tập số UTELearn
 Nền tảng tích hợp hỗ trợ kinh doanh khóa học trực tuyến và quản lý học tập số. Hệ thống cho phép người dùng tìm kiếm, đăng ký và thanh toán các khóa học linh hoạt; đồng thời cung cấp môi trường học tập số tiện ích với các tính năng theo dõi tiến độ, nộp bài tập và tương tác trực tiếp giữa học viên với giảng viên.
 
-> Trạng thái: đã làm khoảng **50%** chức năng. Xem [hand-off.html](hand-off.html) để biết phần đã xong, phần còn lại và cách làm tiếp.
+> Trạng thái: đã làm đủ **34/34** chức năng (kể cả thanh toán VNPay, mã giảm giá, thông báo realtime, chatbot AI, chứng chỉ PDF, quiz, REST API). Xem [hand-off.html](hand-off.html) để biết chi tiết, lưu ý và việc còn lại.
 
 ## Công nghệ
-Spring Boot 3.5 · Thymeleaf · Bootstrap 5 · Spring Data JPA · MySQL 8 · Spring Security + JWT · WebSocket (STOMP) · Cloudinary
+Spring Boot 3.5 · Thymeleaf · Bootstrap 5 · Spring Data JPA · MySQL 8 · Spring Security + JWT · WebSocket (STOMP) · Cloudinary · VNPay · Claude API
 
 ## Yêu cầu
 - JDK 17 trở lên
@@ -20,7 +20,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=h2
 Mở http://localhost:8080. Lần chạy đầu tự tạo dữ liệu mẫu. Xóa thư mục `data/` để reset.
 
 ### Cách 2: chạy với MySQL
-1. Mở MySQL Workbench, chạy file `database/utelearn.sql` (tạo database `utelearn`, 17 bảng và dữ liệu mẫu).
+1. Mở MySQL Workbench, chạy file `database/utelearn.sql` (tạo database `utelearn`, 23 bảng và dữ liệu mẫu).
 2. Sửa tài khoản MySQL trong `src/main/resources/application.properties` (mặc định `root` / `123456`) hoặc đặt biến môi trường `DB_USERNAME`, `DB_PASSWORD`.
 3. Chạy:
 ```bash
@@ -35,6 +35,14 @@ mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8088
 ### Cloudinary (upload ảnh/video)
 Đặt 3 biến môi trường `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` (lấy ở Dashboard của cloudinary.com).
 Nếu không đặt, file upload được lưu vào thư mục `uploads/` để chạy demo.
+
+### Tùy chọn khác (đều không bắt buộc)
+| Biến môi trường | Tác dụng | Khi để trống |
+|---|---|---|
+| `VNPAY_TMN_CODE`, `VNPAY_HASH_SECRET` | Thanh toán VNPay sandbox | Ẩn nút VNPay, dùng thanh toán giả lập |
+| `MAIL_USERNAME`, `MAIL_PASSWORD` | Gửi mail quên mật khẩu (Gmail App Password) | Nội dung mail in ra log |
+| `APP_BASE_URL` | Gốc URL trong link mail / VNPay (mặc định `http://localhost:8080`) | Dùng mặc định |
+| `ANTHROPIC_API_KEY` | Chatbot AI tư vấn khóa học | Chatbot gợi ý theo từ khóa |
 
 ## Tài khoản mẫu
 | Email | Mật khẩu | Vai trò |

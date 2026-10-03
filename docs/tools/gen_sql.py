@@ -89,7 +89,7 @@ CREATE TABLE lessons (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ---------------------------------------------------------------
--- 6. Mã giảm giá  (TODO - chưa dùng trong code)
+-- 6. Mã giảm giá
 -- ---------------------------------------------------------------
 CREATE TABLE coupons (
     id               BIGINT      NOT NULL AUTO_INCREMENT,
@@ -193,7 +193,7 @@ CREATE TABLE chat_messages (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ---------------------------------------------------------------
--- 11. Bài tập + bài nộp  (TODO - chưa dùng trong code)
+-- 11. Bài tập + bài nộp
 -- ---------------------------------------------------------------
 CREATE TABLE assignments (
     id             BIGINT       NOT NULL AUTO_INCREMENT,
@@ -227,7 +227,7 @@ CREATE TABLE submissions (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ---------------------------------------------------------------
--- 12. Đánh giá khóa học  (TODO - chưa dùng trong code)
+-- 12. Đánh giá khóa học
 -- ---------------------------------------------------------------
 CREATE TABLE reviews (
     id         BIGINT NOT NULL AUTO_INCREMENT,
@@ -243,7 +243,7 @@ CREATE TABLE reviews (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ---------------------------------------------------------------
--- 13. Thông báo  (TODO - chưa dùng trong code)
+-- 13. Thông báo
 -- ---------------------------------------------------------------
 CREATE TABLE notifications (
     id         BIGINT       NOT NULL AUTO_INCREMENT,
@@ -258,7 +258,7 @@ CREATE TABLE notifications (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ---------------------------------------------------------------
--- 14. Token quên mật khẩu  (TODO - chưa dùng trong code)
+-- 14. Token quên mật khẩu
 -- ---------------------------------------------------------------
 CREATE TABLE password_reset_tokens (
     id         BIGINT       NOT NULL AUTO_INCREMENT,
@@ -269,6 +269,92 @@ CREATE TABLE password_reset_tokens (
     PRIMARY KEY (id),
     CONSTRAINT uk_password_reset_token UNIQUE (token),
     CONSTRAINT fk_password_reset_user FOREIGN KEY (user_id) REFERENCES users (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ---------------------------------------------------------------
+-- 15. Khóa học yêu thích
+-- ---------------------------------------------------------------
+CREATE TABLE wishlists (
+    id         BIGINT NOT NULL AUTO_INCREMENT,
+    user_id    BIGINT NOT NULL,
+    course_id  BIGINT NOT NULL,
+    created_at DATETIME(6),
+    PRIMARY KEY (id),
+    CONSTRAINT uk_wishlists UNIQUE (user_id, course_id),
+    CONSTRAINT fk_wishlists_user   FOREIGN KEY (user_id)   REFERENCES users (id),
+    CONSTRAINT fk_wishlists_course FOREIGN KEY (course_id) REFERENCES courses (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ---------------------------------------------------------------
+-- 16. Hỏi đáp dưới bài học (parent_id NULL = câu hỏi, có giá trị = câu trả lời)
+-- ---------------------------------------------------------------
+CREATE TABLE lesson_comments (
+    id         BIGINT NOT NULL AUTO_INCREMENT,
+    lesson_id  BIGINT NOT NULL,
+    user_id    BIGINT NOT NULL,
+    parent_id  BIGINT,
+    content    TEXT   NOT NULL,
+    created_at DATETIME(6),
+    PRIMARY KEY (id),
+    CONSTRAINT fk_lesson_comments_lesson FOREIGN KEY (lesson_id) REFERENCES lessons (id),
+    CONSTRAINT fk_lesson_comments_user   FOREIGN KEY (user_id)   REFERENCES users (id),
+    CONSTRAINT fk_lesson_comments_parent FOREIGN KEY (parent_id) REFERENCES lesson_comments (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ---------------------------------------------------------------
+-- 17. Chứng chỉ hoàn thành (file PDF được sinh lại từ dữ liệu này khi tải)
+-- ---------------------------------------------------------------
+CREATE TABLE certificates (
+    id            BIGINT      NOT NULL AUTO_INCREMENT,
+    enrollment_id BIGINT      NOT NULL,
+    code          VARCHAR(30) NOT NULL,             -- mã tra cứu công khai
+    issued_at     DATETIME(6),
+    PRIMARY KEY (id),
+    CONSTRAINT uk_certificates_enrollment UNIQUE (enrollment_id),
+    CONSTRAINT uk_certificates_code UNIQUE (code),
+    CONSTRAINT fk_certificates_enrollment FOREIGN KEY (enrollment_id) REFERENCES enrollments (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ---------------------------------------------------------------
+-- 18. Quiz trắc nghiệm cuối chương
+-- ---------------------------------------------------------------
+CREATE TABLE quizzes (
+    id           BIGINT       NOT NULL AUTO_INCREMENT,
+    section_id   BIGINT       NOT NULL,
+    title        VARCHAR(200) NOT NULL,
+    pass_percent INT          NOT NULL,             -- % câu đúng tối thiểu để đạt
+    created_at   DATETIME(6),
+    PRIMARY KEY (id),
+    CONSTRAINT uk_quizzes_section UNIQUE (section_id),
+    CONSTRAINT fk_quizzes_section FOREIGN KEY (section_id) REFERENCES sections (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE quiz_questions (
+    id             BIGINT       NOT NULL AUTO_INCREMENT,
+    quiz_id        BIGINT       NOT NULL,
+    content        TEXT         NOT NULL,
+    option_a       VARCHAR(500) NOT NULL,
+    option_b       VARCHAR(500) NOT NULL,
+    option_c       VARCHAR(500) NOT NULL,
+    option_d       VARCHAR(500) NOT NULL,
+    correct_option INT          NOT NULL,           -- 1..4 = A..D
+    position       INT          NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_quiz_questions_quiz FOREIGN KEY (quiz_id) REFERENCES quizzes (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE quiz_attempts (
+    id       BIGINT NOT NULL AUTO_INCREMENT,
+    quiz_id  BIGINT NOT NULL,
+    user_id  BIGINT NOT NULL,
+    score    INT    NOT NULL,                       -- số câu đúng
+    total    INT    NOT NULL,
+    passed   BIT    NOT NULL,
+    answers  VARCHAR(2000),                         -- "idCâuHỏi:đápÁn,..."
+    taken_at DATETIME(6),
+    PRIMARY KEY (id),
+    CONSTRAINT fk_quiz_attempts_quiz FOREIGN KEY (quiz_id) REFERENCES quizzes (id),
+    CONSTRAINT fk_quiz_attempts_user FOREIGN KEY (user_id) REFERENCES users (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 """
 
@@ -334,7 +420,7 @@ HEADER = """-- =================================================================
 --    dung.pham@gmail.com    / 123456    (STUDENT)
 --    em.vo@gmail.com        / 123456    (STUDENT)
 --
---  Ghi chú: các bảng đánh dấu TODO đã có trong CSDL nhưng chưa có code (xem hand-off.html).
+--  Ghi chú: bảng/cột khớp với các entity JPA (Hibernate ddl-auto=update cũng tự tạo bảng nếu thiếu).
 -- =================================================================
 
 DROP DATABASE IF EXISTS utelearn;
