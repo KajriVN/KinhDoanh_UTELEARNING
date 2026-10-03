@@ -75,13 +75,63 @@
                 <div class="text-muted" th:if="${pendingCourses.empty}">Không có khóa học nào chờ duyệt.</div>
             </div>
 
-            <div class="box mt-4 text-muted small">
-                <i class="bi bi-bar-chart me-1"></i>Biểu đồ doanh thu theo tháng: <b>sắp có</b> (xem hand-off.html).
+            <div class="box mt-4">
+                <h5 class="fw-bold mb-3">Doanh thu 12 tháng gần nhất</h5>
+                <div style="height: 280px"><canvas id="revenueChart"></canvas></div>
+            </div>
+
+            <div class="row g-4 mt-0">
+                <div class="col-xl-7">
+                    <div class="box h-100">
+                        <h5 class="fw-bold mb-3">Top 5 khóa bán chạy</h5>
+                        <div style="height: 260px"><canvas id="topChart"></canvas></div>
+                        <div class="text-muted small" th:if="${topLabels.empty}">Chưa có đơn hàng nào.</div>
+                    </div>
+                </div>
+                <div class="col-xl-5">
+                    <div class="box h-100">
+                        <h5 class="fw-bold mb-3">Khóa học theo danh mục</h5>
+                        <div style="height: 260px"><canvas id="categoryChart"></canvas></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </main>
 
 <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script th:inline="javascript">
+    const monthLabels = /*[[${monthLabels}]]*/ [];
+    const monthValues = /*[[${monthValues}]]*/ [];
+    const topLabels = /*[[${topLabels}]]*/ [];
+    const topValues = /*[[${topValues}]]*/ [];
+    const categoryLabels = /*[[${categoryLabels}]]*/ [];
+    const categoryValues = /*[[${categoryValues}]]*/ [];
+
+    if (window.Chart) {
+        const vnd = v => Number(v).toLocaleString('vi-VN') + ' đ';
+        new Chart(document.getElementById('revenueChart'), {
+            type: 'bar',
+            data: { labels: monthLabels, datasets: [{ label: 'Doanh thu', data: monthValues, backgroundColor: '#2563eb' }] },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false },
+                tooltip: { callbacks: { label: c => vnd(c.parsed.y) } } },
+                scales: { y: { beginAtZero: true, ticks: { callback: v => Number(v).toLocaleString('vi-VN') } } } }
+        });
+        new Chart(document.getElementById('topChart'), {
+            type: 'bar',
+            data: { labels: topLabels, datasets: [{ label: 'Lượt bán', data: topValues, backgroundColor: '#16a34a' }] },
+            options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false } },
+                scales: { x: { beginAtZero: true, ticks: { precision: 0 } } } }
+        });
+        new Chart(document.getElementById('categoryChart'), {
+            type: 'doughnut',
+            data: { labels: categoryLabels, datasets: [{ data: categoryValues,
+                backgroundColor: ['#2563eb', '#16a34a', '#f59e0b', '#dc2626', '#7c3aed', '#0891b2', '#db2777', '#65a30d'] }] },
+            options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+</script>
 </body>
 </html>

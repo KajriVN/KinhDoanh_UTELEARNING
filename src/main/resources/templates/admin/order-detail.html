@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Chi tiết đơn hàng')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div th:replace="~{fragments/layout :: adminMenu('orders')}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <a th:href="@{/admin/orders}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Danh sách đơn hàng</a>
+            <div class="box mt-2">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">Đơn hàng <span th:text="${order.orderCode}"></span></h5>
+                    <span class="badge fs-6"
+                          th:classappend="${order.status.name() == 'PAID'} ? 'bg-success' : (${order.status.name() == 'PENDING'} ? 'bg-warning text-dark' : 'bg-secondary')"
+                          th:text="${order.status.label}"></span>
+                </div>
+
+                <div class="row small mb-3 g-2">
+                    <div class="col-sm-6">Khách hàng: <b th:text="${order.user.fullName}"></b>
+                        (<span th:text="${order.user.email}"></span>)</div>
+                    <div class="col-sm-6">Phương thức: <b th:text="${order.paymentMethod}"></b></div>
+                    <div class="col-sm-6">Ngày tạo: <span th:text="${@fmt.dateTime(order.createdAt)}"></span></div>
+                    <div class="col-sm-6" th:if="${order.paidAt != null}">Thanh toán lúc: <span th:text="${@fmt.dateTime(order.paidAt)}"></span></div>
+                    <div class="col-sm-6" th:if="${order.coupon != null}">Mã giảm giá:
+                        <b th:text="${order.coupon.code}"></b> (-<span th:text="${order.coupon.discountPercent}"></span>%)</div>
+                </div>
+
+                <table class="table align-middle">
+                    <thead class="table-light"><tr><th>Khóa học</th><th>Giảng viên</th><th class="text-end">Giá</th></tr></thead>
+                    <tbody>
+                    <tr th:each="item : ${order.items}">
+                        <td><a th:href="@{/courses/{id}(id=${item.course.id})}" th:text="${item.course.title}"></a></td>
+                        <td th:text="${item.course.instructor.fullName}"></td>
+                        <td class="text-end" th:text="${@fmt.money(item.price)}"></td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr><td colspan="2">Tạm tính</td><td class="text-end" th:text="${@fmt.money(order.totalAmount)}"></td></tr>
+                    <tr><td colspan="2">Giảm giá</td><td class="text-end" th:text="'- ' + ${@fmt.money(order.discountAmount)}"></td></tr>
+                    <tr class="fw-bold fs-5"><td colspan="2">Tổng cộng</td><td class="text-end price" th:text="${@fmt.money(order.finalAmount)}"></td></tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

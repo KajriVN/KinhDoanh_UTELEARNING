@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Doanh thu')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div th:replace="~{fragments/layout :: instructorMenu('revenue')}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <h3 class="page-title">Doanh thu</h3>
+            <p class="text-muted">Tính theo giá bán của các khóa học của bạn trong những đơn đã thanh toán (chưa trừ mã giảm giá và phí nền tảng).</p>
+
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6">
+                    <div class="stat-card">
+                        <div class="icon bg-danger-subtle text-danger"><i class="bi bi-cash-coin"></i></div>
+                        <div><div class="value fs-5" th:text="${@fmt.money(total)}">0 đ</div><div class="small text-muted">Tổng doanh thu</div></div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="stat-card">
+                        <div class="icon bg-success-subtle text-success"><i class="bi bi-cart-check"></i></div>
+                        <div><div class="value" th:text="${totalSold}">0</div><div class="small text-muted">Lượt bán</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="box mb-4">
+                <h5 class="fw-bold mb-3">12 tháng gần nhất</h5>
+                <div style="height: 260px"><canvas id="revenueChart"></canvas></div>
+            </div>
+
+            <div class="box p-0 table-responsive">
+                <div class="p-3 pb-0"><h5 class="fw-bold mb-0">Theo khóa học</h5></div>
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                    <tr><th class="ps-3">Khóa học</th><th>Lượt bán</th><th class="text-end pe-3">Doanh thu</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="r : ${byCourse}">
+                        <td class="ps-3"><a th:href="@{/courses/{id}(id=${r.courseId})}" th:text="${r.title}"></a></td>
+                        <td th:text="${r.sold}"></td>
+                        <td class="text-end pe-3" th:text="${@fmt.money(r.revenue)}"></td>
+                    </tr>
+                    <tr th:if="${byCourse.empty}">
+                        <td colspan="3" class="text-center text-muted py-4">Chưa có khóa học nào được bán.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="box p-0 table-responsive mt-4">
+                <div class="p-3 pb-0"><h5 class="fw-bold mb-0">Theo tháng</h5></div>
+                <table class="table align-middle mb-0">
+                    <thead class="table-light"><tr><th class="ps-3">Tháng</th><th class="text-end pe-3">Doanh thu</th></tr></thead>
+                    <tbody>
+                    <tr th:each="m : ${monthly}">
+                        <td class="ps-3" th:text="${m.key}"></td>
+                        <td class="text-end pe-3" th:text="${@fmt.money(m.value)}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script th:inline="javascript">
+    const monthLabels = /*[[${monthLabels}]]*/ [];
+    const monthValues = /*[[${monthValues}]]*/ [];
+    if (window.Chart) {
+        new Chart(document.getElementById('revenueChart'), {
+            type: 'line',
+            data: { labels: monthLabels, datasets: [{ label: 'Doanh thu', data: monthValues, borderColor: '#2563eb',
+                backgroundColor: 'rgba(37,99,235,.15)', fill: true, tension: .3 }] },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false },
+                tooltip: { callbacks: { label: c => Number(c.parsed.y).toLocaleString('vi-VN') + ' đ' } } },
+                scales: { y: { beginAtZero: true, ticks: { callback: v => Number(v).toLocaleString('vi-VN') } } } }
+        });
+    }
+</script>
+</body>
+</html>

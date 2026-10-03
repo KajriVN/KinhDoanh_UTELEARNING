@@ -31,6 +31,8 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
 
     List<Course> findTop8ByStatusOrderByCreatedAtDesc(CourseStatus status);
 
+    List<Course> findTop60ByStatusOrderByCreatedAtDesc(CourseStatus status);
+
     List<Course> findByInstructorOrderByCreatedAtDesc(User instructor);
 
     List<Course> findByStatusOrderByUpdatedAtAsc(CourseStatus status);
@@ -40,6 +42,11 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     long countByStatus(CourseStatus status);
 
     long countByCategory(Category category);
+
+    // số khóa đã xuất bản theo danh mục: [tên danh mục, số khóa]
+    @Query("SELECT c.category.name, COUNT(c) FROM Course c WHERE c.status = :status " +
+            "GROUP BY c.category.id, c.category.name ORDER BY COUNT(c) DESC")
+    List<Object[]> countByCategoryName(@Param("status") CourseStatus status);
 
     long countByCategoryAndStatus(Category category, CourseStatus status);
 }

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Quản lý đơn hàng')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div th:replace="~{fragments/layout :: adminMenu('orders')}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <h3 class="page-title mb-3">Đơn hàng</h3>
+
+            <form class="box mb-3" method="get" th:action="@{/admin/orders}">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label small mb-1">Tìm kiếm</label>
+                        <input class="form-control form-control-sm" name="keyword" th:value="${keyword}"
+                               placeholder="Mã đơn / email / tên">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small mb-1">Trạng thái</label>
+                        <select class="form-select form-select-sm" name="status">
+                            <option value="">Tất cả</option>
+                            <option th:each="s : ${statuses}" th:value="${s.name()}" th:text="${s.label}"
+                                    th:selected="${s == status}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small mb-1">Từ ngày</label>
+                        <input type="date" class="form-control form-control-sm" name="from" th:value="${from}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small mb-1">Đến ngày</label>
+                        <input type="date" class="form-control form-control-sm" name="to" th:value="${to}">
+                    </div>
+                    <div class="col-md-2 d-flex gap-1">
+                        <button class="btn btn-primary btn-sm flex-grow-1" type="submit">Lọc</button>
+                        <a class="btn btn-outline-secondary btn-sm" th:href="@{/admin/orders}">Xóa lọc</a>
+                    </div>
+                </div>
+            </form>
+
+            <div class="box p-0 table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Mã đơn</th>
+                        <th>Khách hàng</th>
+                        <th>Ngày tạo</th>
+                        <th class="text-end">Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="o : ${orderPage.content}">
+                        <td class="ps-3 fw-semibold" th:text="${o.orderCode}"></td>
+                        <td>
+                            <div th:text="${o.user.fullName}"></div>
+                            <div class="small text-muted" th:text="${o.user.email}"></div>
+                        </td>
+                        <td class="small text-nowrap" th:text="${@fmt.dateTime(o.createdAt)}"></td>
+                        <td class="text-end text-nowrap" th:text="${@fmt.money(o.finalAmount)}"></td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${o.status.name() == 'PAID'} ? 'bg-success' : (${o.status.name() == 'PENDING'} ? 'bg-warning text-dark' : 'bg-secondary')"
+                                  th:text="${o.status.label}"></span>
+                        </td>
+                        <td class="text-end pe-3">
+                            <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/orders/{c}(c=${o.orderCode})}">Chi tiết</a>
+                        </td>
+                    </tr>
+                    <tr th:if="${orderPage.empty}">
+                        <td colspan="6" class="text-center text-muted py-4">Không có đơn hàng nào.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <nav th:replace="~{fragments/layout :: pagination(${orderPage})}"></nav>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
