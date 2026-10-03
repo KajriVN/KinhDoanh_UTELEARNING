@@ -47,7 +47,6 @@ public class Order {
     @Column(name = "payment_method", nullable = false, length = 20)
     private PaymentMethod paymentMethod = PaymentMethod.MOCK;
 
-    // TODO: dùng khi làm chức năng mã giảm giá
     @ManyToOne
     @JoinColumn(name = "coupon_id")
     private Coupon coupon;

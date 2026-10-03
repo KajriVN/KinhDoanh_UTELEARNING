@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Mã giảm giá')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div th:replace="~{fragments/layout :: adminMenu('coupons')}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <h3 class="page-title mb-3">Mã giảm giá</h3>
+            <div class="row g-4">
+                <!-- ===== Bảng ===== -->
+                <div class="col-xl-7">
+                    <div class="box p-0 table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead class="table-light">
+                            <tr><th class="ps-3">Mã</th><th>Giảm</th><th>Đã dùng</th><th>Hết hạn</th><th class="text-end pe-3"></th></tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="c : ${coupons}">
+                                <td class="ps-3">
+                                    <span class="fw-semibold" th:text="${c.code}"></span>
+                                    <span class="badge bg-success ms-1" th:if="${c.active and !c.expired and !c.outOfUses}">Đang chạy</span>
+                                    <span class="badge bg-secondary ms-1" th:unless="${c.active and !c.expired and !c.outOfUses}">Không dùng được</span>
+                                </td>
+                                <td th:text="${c.discountPercent} + '%'"></td>
+                                <td th:text="${c.usedCount} + ' / ' + ${c.maxUses == 0 ? '∞' : c.maxUses}"></td>
+                                <td class="small" th:text="${c.expiredAt == null ? 'Không giới hạn' : @fmt.dateTime(c.expiredAt)}"></td>
+                                <td class="text-end pe-3 text-nowrap">
+                                    <a class="btn btn-sm btn-outline-secondary" th:href="@{/admin/coupons(editId=${c.id})}">
+                                        <i class="bi bi-pencil"></i></a>
+                                    <form class="d-inline" method="post" th:action="@{/admin/coupons/{id}/delete(id=${c.id})}"
+                                          onsubmit="return confirm('Xóa mã này?')">
+                                        <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr th:if="${coupons.empty}">
+                                <td colspan="5" class="text-center text-muted py-4">Chưa có mã giảm giá.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ===== Form thêm/sửa ===== -->
+                <div class="col-xl-5">
+                    <form class="box" method="post" th:action="@{/admin/coupons/save}">
+                        <h5 class="fw-bold mb-3" th:text="${editing.id == null} ? 'Thêm mã giảm giá' : 'Sửa mã giảm giá'"></h5>
+                        <input type="hidden" name="id" th:value="${editing.id}">
+                        <div class="mb-3">
+                            <label class="form-label">Mã</label>
+                            <input class="form-control text-uppercase" name="code" th:value="${editing.code}" required
+                                   placeholder="VD: WELCOME20">
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label">Giảm (%)</label>
+                                <input type="number" min="1" max="100" class="form-control" name="discountPercent"
+                                       th:value="${editing.id == null ? 10 : editing.discountPercent}" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Số lượt tối đa</label>
+                                <input type="number" min="0" class="form-control" name="maxUses" th:value="${editing.maxUses}">
+                                <div class="form-text">0 = không giới hạn</div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Hết hạn</label>
+                            <input type="datetime-local" class="form-control" name="expiredAt"
+                                   th:value="${editing.expiredAt != null ? #temporals.format(editing.expiredAt, 'yyyy-MM-dd''T''HH:mm') : ''}">
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" name="active" value="true" id="active"
+                                   th:checked="${editing.id == null or editing.active}">
+                            <label class="form-check-label" for="active">Đang bật</label>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary" type="submit">Lưu</button>
+                            <a class="btn btn-outline-secondary" th:if="${editing.id != null}" th:href="@{/admin/coupons}">Hủy</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

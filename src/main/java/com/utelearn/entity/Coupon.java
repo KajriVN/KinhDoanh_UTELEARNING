@@ -8,7 +8,6 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 // Mã giảm giá áp dụng lúc thanh toán.
-// TODO (hand-off): chưa làm trang quản lý coupon + áp mã ở giỏ hàng.
 @Entity
 @Table(name = "coupons")
 @Getter
@@ -39,4 +38,12 @@ public class Coupon {
 
     @Column(nullable = false)
     private boolean active = true;
+
+    public boolean isExpired() {
+        return expiredAt != null && LocalDateTime.now().isAfter(expiredAt);
+    }
+
+    public boolean isOutOfUses() {
+        return maxUses > 0 && usedCount >= maxUses;
+    }
 }

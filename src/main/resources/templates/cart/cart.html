@@ -37,19 +37,23 @@
                 <div class="d-flex justify-content-between mb-2">
                     <span>Tạm tính</span><span th:text="${@fmt.money(total)}">0 đ</span>
                 </div>
-                <div class="d-flex justify-content-between mb-2 text-muted small">
-                    <span>Giảm giá</span><span>0 đ</span>
+                <div class="d-flex justify-content-between mb-2 small" th:classappend="${coupon == null} ? 'text-muted'">
+                    <span>Giảm giá <b th:if="${coupon != null}" th:text="'(' + ${coupon.code} + ' -' + ${coupon.discountPercent} + '%)'"></b></span>
+                    <span th:text="'- ' + ${@fmt.money(discount)}">0 đ</span>
                 </div>
-                <!-- TODO (hand-off): ô nhập mã giảm giá (bảng coupons) -->
-                <div class="input-group input-group-sm mb-3">
-                    <input class="form-control" placeholder="Mã giảm giá (sắp có)" disabled>
-                    <button class="btn btn-outline-secondary" disabled>Áp dụng</button>
-                </div>
+                <form method="get" th:action="@{/cart}" class="input-group input-group-sm mb-1">
+                    <input class="form-control text-uppercase" name="couponCode" placeholder="Mã giảm giá"
+                           th:value="${param.couponCode}">
+                    <button class="btn btn-outline-primary" type="submit">Áp dụng</button>
+                </form>
+                <div class="small text-danger mb-2" th:if="${couponError != null}" th:text="${couponError}"></div>
+                <div class="small text-success mb-2" th:if="${coupon != null}">Đã áp dụng mã giảm giá</div>
                 <hr>
                 <div class="d-flex justify-content-between fs-5 fw-bold mb-3">
-                    <span>Tổng cộng</span><span class="price" th:text="${@fmt.money(total)}">0 đ</span>
+                    <span>Tổng cộng</span><span class="price" th:text="${@fmt.money(finalTotal)}">0 đ</span>
                 </div>
                 <form th:action="@{/checkout}" method="post">
+                    <input type="hidden" name="couponCode" th:if="${coupon != null}" th:value="${coupon.code}">
                     <button class="btn btn-primary w-100 py-2" type="submit">
                         <i class="bi bi-shield-lock me-1"></i>Tiến hành thanh toán</button>
                 </form>

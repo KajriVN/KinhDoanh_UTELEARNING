@@ -43,7 +43,7 @@
             </tbody>
             <tfoot>
             <tr><td>Tạm tính</td><td class="text-end" th:text="${@fmt.money(order.totalAmount)}"></td><td></td></tr>
-            <tr><td>Giảm giá</td><td class="text-end" th:text="'- ' + ${@fmt.money(order.discountAmount)}"></td><td></td></tr>
+            <tr><td>Giảm giá <span class="badge bg-info text-dark" th:if="${order.coupon != null}" th:text="${order.coupon.code}"></span></td><td class="text-end" th:text="'- ' + ${@fmt.money(order.discountAmount)}"></td><td></td></tr>
             <tr class="fw-bold fs-5"><td>Tổng cộng</td><td class="text-end price" th:text="${@fmt.money(order.finalAmount)}"></td><td></td></tr>
             </tfoot>
         </table>
