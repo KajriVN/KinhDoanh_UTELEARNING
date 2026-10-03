@@ -83,6 +83,20 @@ public class InstructorCurriculumController {
         return "redirect:/instructor/courses/" + courseId + "/curriculum";
     }
 
+    @PostMapping("/sections/{sectionId}/move")
+    public String moveSection(@PathVariable Long sectionId, @RequestParam String dir, Principal principal) {
+        User me = userService.findByEmail(principal.getName());
+        Long courseId = curriculumService.moveSection(sectionId, dir, me);
+        return "redirect:/instructor/courses/" + courseId + "/curriculum";
+    }
+
+    @PostMapping("/lessons/{lessonId}/move")
+    public String moveLesson(@PathVariable Long lessonId, @RequestParam String dir, Principal principal) {
+        User me = userService.findByEmail(principal.getName());
+        Long courseId = curriculumService.moveLesson(lessonId, dir, me);
+        return "redirect:/instructor/courses/" + courseId + "/curriculum";
+    }
+
     // ================== BÀI HỌC ==================
 
     @GetMapping("/sections/{sectionId}/lessons/new")

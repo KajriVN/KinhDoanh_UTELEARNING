@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Kết quả ' + ${quiz.title})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4" style="max-width: 820px">
+    <a th:href="@{/learn/{id}(id=${course.id})}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Về trang học</a>
+
+    <div class="box text-center my-3 py-4">
+        <i class="bi fs-1" th:classappend="${attempt.passed} ? 'bi-trophy-fill text-success' : 'bi-emoji-neutral text-secondary'"></i>
+        <h4 class="fw-bold mt-2" th:text="${attempt.passed} ? 'Chúc mừng, bạn đã đạt!' : 'Chưa đạt, hãy thử lại nhé'"></h4>
+        <div class="fs-3 fw-bold" th:text="${attempt.score} + ' / ' + ${attempt.total} + ' câu đúng (' + ${attempt.percent} + '%)'"></div>
+        <div class="text-muted small">Điểm đạt: <span th:text="${quiz.passPercent}"></span>% · <span th:text="${quiz.title}"></span></div>
+        <a class="btn btn-primary mt-3" th:href="@{/learn/{c}/quizzes/{q}(c=${course.id}, q=${quiz.id})}">Làm lại</a>
+    </div>
+
+    <div class="box mb-3" th:each="q, st : ${quiz.questions}"
+         th:with="pick=${chosen.get(q.id)}">
+        <div class="fw-semibold mb-2" style="white-space: pre-line">
+            <i class="bi bi-check-circle-fill text-success" th:if="${pick != null and pick == q.correctOption}"></i>
+            <i class="bi bi-x-circle-fill text-danger" th:unless="${pick != null and pick == q.correctOption}"></i>
+            <span th:text="'Câu ' + ${st.count} + ': ' + ${q.content}"></span>
+        </div>
+        <div class="small ps-4" th:each="opt, os : ${q.options}"
+             th:classappend="${os.count == q.correctOption} ? 'text-success fw-semibold' : (${pick != null and pick == os.count} ? 'text-danger' : '')">
+            <span th:text="${#strings.substring('ABCD', os.index, os.index + 1)} + '. ' + ${opt}"></span>
+            <span th:if="${os.count == q.correctOption}">← đáp án đúng</span>
+            <span th:if="${pick != null and pick == os.count and os.count != q.correctOption}">← bạn chọn</span>
+        </div>
+        <div class="small text-muted ps-4" th:if="${pick == null}">Bạn chưa chọn đáp án.</div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

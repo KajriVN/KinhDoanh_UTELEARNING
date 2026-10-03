@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Bài kiểm tra cuối chương')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div th:replace="~{fragments/layout :: instructorMenu('courses')}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <a th:href="@{/instructor/courses/{id}/curriculum(id=${course.id})}" class="small text-decoration-none">
+                <i class="bi bi-arrow-left"></i> <span th:text="${course.title}"></span></a>
+            <h3 class="page-title mt-1">Bài kiểm tra cuối chương</h3>
+            <p class="text-muted" th:text="'Chương ' + ${section.position} + ': ' + ${section.title}"></p>
+
+            <!-- ===== Thông tin quiz ===== -->
+            <form class="box mb-4" method="post" th:action="@{/instructor/sections/{id}/quiz(id=${section.id})}">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-7">
+                        <label class="form-label">Tên bài kiểm tra</label>
+                        <input class="form-control" name="title" required maxlength="200"
+                               th:value="${quiz != null} ? ${quiz.title} : ('Kiểm tra chương ' + ${section.position})">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Điểm đạt (%)</label>
+                        <input type="number" class="form-control" name="passPercent" min="1" max="100"
+                               th:value="${quiz != null} ? ${quiz.passPercent} : 70">
+                    </div>
+                    <div class="col-md-2 d-grid">
+                        <button class="btn btn-primary" type="submit" th:text="${quiz == null} ? 'Tạo quiz' : 'Lưu'">Lưu</button>
+                    </div>
+                </div>
+            </form>
+
+            <th:block th:if="${quiz != null}">
+                <!-- ===== Danh sách câu hỏi ===== -->
+                <div class="box mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0" th:text="'Câu hỏi (' + ${quiz.questions.size()} + ')'"></h5>
+                        <form method="post" th:action="@{/instructor/quizzes/{id}/delete(id=${quiz.id})}"
+                              onsubmit="return confirm('Xóa bài kiểm tra này cùng toàn bộ câu hỏi và kết quả đã làm?')">
+                            <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i> Xóa quiz</button>
+                        </form>
+                    </div>
+
+                    <div class="border-top py-3" th:each="q, st : ${quiz.questions}">
+                        <div class="d-flex justify-content-between gap-2">
+                            <div class="fw-semibold" th:text="${st.count} + '. ' + ${q.content}"></div>
+                            <div class="text-nowrap">
+                                <a class="btn btn-sm btn-outline-secondary"
+                                   th:href="@{/instructor/sections/{s}/quiz(s=${section.id}, editQuestion=${q.id})}"><i class="bi bi-pencil"></i></a>
+                                <form class="d-inline" method="post" th:action="@{/instructor/questions/{id}/delete(id=${q.id})}"
+                                      onsubmit="return confirm('Xóa câu hỏi này?')">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                        <ul class="list-unstyled small mb-0 mt-1">
+                            <li th:each="opt, os : ${q.options}" th:classappend="${os.count == q.correctOption} ? 'text-success fw-semibold'">
+                                <span th:text="${#strings.substring('ABCD', os.index, os.index + 1)} + '. ' + ${opt}"></span>
+                                <i class="bi bi-check2" th:if="${os.count == q.correctOption}"></i>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="text-muted" th:if="${quiz.questions.empty}">Chưa có câu hỏi. Quiz chỉ hiện cho học viên khi có ít nhất 1 câu.</div>
+                </div>
+
+                <!-- ===== Form thêm / sửa câu hỏi ===== -->
+                <form class="box mb-4" method="post" th:action="@{/instructor/quizzes/{id}/questions(id=${quiz.id})}">
+                    <h5 class="fw-bold mb-3" th:text="${editing.id == null} ? 'Thêm câu hỏi' : 'Sửa câu hỏi'"></h5>
+                    <input type="hidden" name="questionId" th:value="${editing.id}">
+                    <div class="mb-3">
+                        <label class="form-label">Câu hỏi</label>
+                        <textarea class="form-control" name="content" rows="2" required th:text="${editing.content}"></textarea>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6" th:each="letter, ls : ${#strings.listSplit('A,B,C,D', ',')}">
+                            <div class="input-group">
+                                <span class="input-group-text" th:text="${letter}"></span>
+                                <input class="form-control" th:name="'option' + ${letter}" required maxlength="500"
+                                       th:value="${editing.id != null} ? ${editing.options[ls.index]}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label d-block">Đáp án đúng</label>
+                        <div class="form-check form-check-inline" th:each="n : ${#numbers.sequence(1, 4)}">
+                            <input class="form-check-input" type="radio" name="correct" th:id="'c' + ${n}" th:value="${n}" required
+                                   th:checked="${editing.correctOption == n}">
+                            <label class="form-check-label" th:for="'c' + ${n}" th:text="${#strings.substring('ABCD', n - 1, n)}"></label>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary" type="submit" th:text="${editing.id == null} ? 'Thêm câu hỏi' : 'Lưu câu hỏi'"></button>
+                        <a class="btn btn-outline-secondary" th:if="${editing.id != null}"
+                           th:href="@{/instructor/sections/{s}/quiz(s=${section.id})}">Hủy sửa</a>
+                    </div>
+                </form>
+
+                <!-- ===== Kết quả học viên ===== -->
+                <div class="box p-0 table-responsive">
+                    <div class="p-3 pb-0"><h5 class="fw-bold mb-0">Lượt làm bài gần đây</h5></div>
+                    <table class="table align-middle mb-0">
+                        <thead class="table-light"><tr><th class="ps-3">Học viên</th><th>Điểm</th><th>Kết quả</th><th>Thời gian</th></tr></thead>
+                        <tbody>
+                        <tr th:each="a : ${attempts}">
+                            <td class="ps-3" th:text="${a.user.fullName}"></td>
+                            <td th:text="${a.score} + '/' + ${a.total} + ' (' + ${a.percent} + '%)'"></td>
+                            <td><span class="badge" th:classappend="${a.passed} ? 'bg-success' : 'bg-secondary'"
+                                      th:text="${a.passed} ? 'Đạt' : 'Chưa đạt'"></span></td>
+                            <td class="small text-muted" th:text="${@fmt.dateTime(a.takenAt)}"></td>
+                        </tr>
+                        <tr th:if="${attempts.empty}"><td colspan="4" class="text-center text-muted py-4">Chưa có học viên làm bài.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </th:block>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

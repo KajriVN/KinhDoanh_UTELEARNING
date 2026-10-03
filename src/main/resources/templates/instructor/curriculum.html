@@ -37,7 +37,7 @@
             </div>
 
             <!-- ===== Từng chương ===== -->
-            <div class="box mb-3" th:each="s : ${course.sections}">
+            <div class="box mb-3" th:each="s, sStat : ${course.sections}">
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
                     <!-- đổi tên chương -->
                     <form class="d-flex gap-2 flex-grow-1" method="post" style="max-width: 520px"
@@ -47,6 +47,16 @@
                         <button class="btn btn-sm btn-outline-secondary" type="submit" title="Lưu tên"><i class="bi bi-check-lg"></i></button>
                     </form>
                     <div class="d-flex gap-2">
+                        <form method="post" th:action="@{/instructor/sections/{id}/move(id=${s.id}, dir='up')}">
+                            <button class="btn btn-sm btn-outline-secondary" type="submit" title="Chuyển chương lên"
+                                    th:disabled="${sStat.first}"><i class="bi bi-arrow-up"></i></button>
+                        </form>
+                        <form method="post" th:action="@{/instructor/sections/{id}/move(id=${s.id}, dir='down')}">
+                            <button class="btn btn-sm btn-outline-secondary" type="submit" title="Chuyển chương xuống"
+                                    th:disabled="${sStat.last}"><i class="bi bi-arrow-down"></i></button>
+                        </form>
+                        <a class="btn btn-sm btn-outline-warning" th:href="@{/instructor/sections/{id}/quiz(id=${s.id})}">
+                            <i class="bi bi-patch-question"></i> Quiz</a>
                         <a class="btn btn-sm btn-primary" th:href="@{/instructor/sections/{id}/lessons/new(id=${s.id})}">
                             <i class="bi bi-plus-lg"></i> Thêm bài học</a>
                         <form method="post" th:action="@{/instructor/sections/{id}/delete(id=${s.id})}"
@@ -56,12 +66,20 @@
                     </div>
                 </div>
 
-                <div class="lesson-row" th:each="l : ${s.lessons}">
+                <div class="lesson-row" th:each="l, lStat : ${s.lessons}">
                     <span class="text-muted small" th:text="${s.position} + '.' + ${l.position}"></span>
                     <i th:class="${l.videoUrl != null} ? 'bi bi-camera-video text-primary' : 'bi bi-file-text text-muted'"></i>
                     <span class="flex-grow-1" th:text="${l.title}">Bài</span>
                     <span th:if="${l.preview}" class="badge bg-success-subtle text-success">Học thử</span>
                     <span class="small text-muted" th:text="${l.durationMinutes} + ' phút'"></span>
+                    <form method="post" th:action="@{/instructor/lessons/{id}/move(id=${l.id}, dir='up')}">
+                        <button class="btn btn-sm btn-outline-secondary" type="submit" title="Chuyển bài lên"
+                                th:disabled="${lStat.first}"><i class="bi bi-arrow-up"></i></button>
+                    </form>
+                    <form method="post" th:action="@{/instructor/lessons/{id}/move(id=${l.id}, dir='down')}">
+                        <button class="btn btn-sm btn-outline-secondary" type="submit" title="Chuyển bài xuống"
+                                th:disabled="${lStat.last}"><i class="bi bi-arrow-down"></i></button>
+                    </form>
                     <a class="btn btn-sm btn-outline-secondary" th:href="@{/instructor/lessons/{id}/edit(id=${l.id})}"><i class="bi bi-pencil"></i></a>
                     <form method="post" th:action="@{/instructor/lessons/{id}/delete(id=${l.id})}"
                           onsubmit="return confirm('Xóa bài học này?')">
@@ -76,7 +94,6 @@
                 <input class="form-control" name="title" placeholder="Tên chương mới, vd: Chương 1: Giới thiệu" required>
                 <button class="btn btn-primary text-nowrap" type="submit"><i class="bi bi-plus-lg me-1"></i>Thêm chương</button>
             </form>
-            <!-- TODO (hand-off): kéo thả sắp xếp lại thứ tự chương/bài -->
         </div>
     </div>
 </main>
