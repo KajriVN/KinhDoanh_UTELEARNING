@@ -8,12 +8,17 @@ import com.utelearn.entity.User;
 import com.utelearn.exception.BusinessException;
 import com.utelearn.exception.NotFoundException;
 import com.utelearn.repository.AssignmentRepository;
+import com.utelearn.repository.LessonCommentRepository;
 import com.utelearn.repository.LessonProgressRepository;
 import com.utelearn.repository.LessonRepository;
+import com.utelearn.repository.QuizAttemptRepository;
+import com.utelearn.repository.QuizRepository;
 import com.utelearn.repository.SectionRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 // Quản lý nội dung khóa học: chương (Section) và bài học (Lesson)
 @Service
@@ -25,16 +30,24 @@ public class CurriculumService {
     private final CourseService courseService;
     private final FileUploadService fileUploadService;
     private final AssignmentRepository assignmentRepository;
+    private final LessonCommentRepository lessonCommentRepository;
+    private final QuizRepository quizRepository;
+    private final QuizAttemptRepository quizAttemptRepository;
 
     public CurriculumService(SectionRepository sectionRepository, LessonRepository lessonRepository,
                              LessonProgressRepository lessonProgressRepository, CourseService courseService,
-                             FileUploadService fileUploadService, AssignmentRepository assignmentRepository) {
+                             FileUploadService fileUploadService, AssignmentRepository assignmentRepository,
+                             LessonCommentRepository lessonCommentRepository,
+                             QuizRepository quizRepository, QuizAttemptRepository quizAttemptRepository) {
         this.sectionRepository = sectionRepository;
         this.lessonRepository = lessonRepository;
         this.lessonProgressRepository = lessonProgressRepository;
         this.courseService = courseService;
         this.fileUploadService = fileUploadService;
         this.assignmentRepository = assignmentRepository;
+        this.lessonCommentRepository = lessonCommentRepository;
+        this.quizRepository = quizRepository;
+        this.quizAttemptRepository = quizAttemptRepository;
     }
 
     // ================== CHƯƠNG ==================
@@ -70,10 +83,57 @@ public class CurriculumService {
         for (Lesson lesson : section.getLessons()) {
             lessonProgressRepository.deleteByLesson(lesson);
             assignmentRepository.clearLesson(lesson);
+            deleteComments(lesson);
         }
+        // quiz cuối chương: xóa kết quả làm bài rồi xóa quiz (câu hỏi xóa theo)
+        quizAttemptRepository.deleteByQuiz_Section(section);
+        quizRepository.findBySection(section).ifPresent(quizRepository::delete);
         section.getCourse().getSections().remove(section);
         sectionRepository.delete(section);
         return courseId;
+    }
+
+    // xóa hỏi đáp của bài học (câu trả lời trước, câu hỏi sau)
+    private void deleteComments(Lesson lesson) {
+        lessonCommentRepository.deleteRepliesByLesson(lesson);
+        lessonCommentRepository.deleteAllByLesson(lesson);
+    }
+
+    // ================== SẮP XẾP LẠI ==================
+
+    // dir = "up" hoặc "down". Đánh số lại 1..n trước khi đổi chỗ (phòng khi có số trùng/hổng do từng xóa)
+    @Transactional
+    public Long moveSection(Long sectionId, String dir, User user) {
+        Section section = getOwnedSection(sectionId, user);
+        List<Section> siblings = section.getCourse().getSections();
+        swapWithNeighbor(siblings, siblings.indexOf(section), dir);
+        for (int i = 0; i < siblings.size(); i++) {
+            siblings.get(i).setPosition(i + 1);
+        }
+        sectionRepository.saveAll(siblings);
+        return section.getCourse().getId();
+    }
+
+    @Transactional
+    public Long moveLesson(Long lessonId, String dir, User user) {
+        Lesson lesson = getOwnedLesson(lessonId, user);
+        List<Lesson> siblings = lesson.getSection().getLessons();
+        swapWithNeighbor(siblings, siblings.indexOf(lesson), dir);
+        for (int i = 0; i < siblings.size(); i++) {
+            siblings.get(i).setPosition(i + 1);
+        }
+        lessonRepository.saveAll(siblings);
+        return lesson.getSection().getCourse().getId();
+    }
+
+    private <T> void swapWithNeighbor(List<T> list, int index, String dir) {
+        int target = "up".equals(dir) ? index - 1 : index + 1;
+        if (index < 0 || target < 0 || target >= list.size()) {
+            return; // đã ở đầu / cuối danh sách
+        }
+        T item = list.get(index);
+        list.set(index, list.get(target));
+        list.set(target, item);
     }
 
     public Section getOwnedSection(Long sectionId, User user) {
@@ -110,6 +170,7 @@ public class CurriculumService {
         Long courseId = lesson.getSection().getCourse().getId();
         lessonProgressRepository.deleteByLesson(lesson);
         assignmentRepository.clearLesson(lesson);
+        deleteComments(lesson);
         lesson.getSection().getLessons().remove(lesson);
         lessonRepository.delete(lesson);
         return courseId;

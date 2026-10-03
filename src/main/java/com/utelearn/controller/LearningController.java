@@ -6,9 +6,12 @@ import com.utelearn.entity.Lesson;
 import com.utelearn.entity.User;
 import com.utelearn.exception.BusinessException;
 import com.utelearn.service.AssignmentService;
+import com.utelearn.service.CertificateService;
 import com.utelearn.service.CourseService;
 import com.utelearn.service.EnrollmentService;
 import com.utelearn.service.LearningService;
+import com.utelearn.service.LessonCommentService;
+import com.utelearn.service.QuizService;
 import com.utelearn.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,22 +33,31 @@ public class LearningController {
     private final CourseService courseService;
     private final UserService userService;
     private final AssignmentService assignmentService;
+    private final LessonCommentService commentService;
+    private final CertificateService certificateService;
+    private final QuizService quizService;
 
     public LearningController(LearningService learningService, EnrollmentService enrollmentService,
                               CourseService courseService, UserService userService,
-                              AssignmentService assignmentService) {
+                              AssignmentService assignmentService, LessonCommentService commentService,
+                              CertificateService certificateService, QuizService quizService) {
         this.learningService = learningService;
         this.enrollmentService = enrollmentService;
         this.courseService = courseService;
         this.userService = userService;
         this.assignmentService = assignmentService;
+        this.commentService = commentService;
+        this.certificateService = certificateService;
+        this.quizService = quizService;
     }
 
     // Trang "Khóa học của tôi"
     @GetMapping("/my-courses")
     public String myCourses(Principal principal, Model model) {
         User user = userService.findByEmail(principal.getName());
-        model.addAttribute("enrollments", enrollmentService.getMyCourses(user));
+        List<Enrollment> enrollments = enrollmentService.getMyCourses(user);
+        model.addAttribute("enrollments", enrollments);
+        model.addAttribute("certificateCodes", certificateService.codesFor(enrollments));
         return "learning/my-courses";
     }
 
@@ -78,9 +90,13 @@ public class LearningController {
         model.addAttribute("lesson", lesson);
         model.addAttribute("enrollment", enrollment);
         model.addAttribute("completedIds", completedIds);
+        model.addAttribute("quizzes", quizService.quizzesOfCourse(course));
+        model.addAttribute("certificateCode", certificateService.codeFor(enrollment));
         model.addAttribute("nextLesson", learningService.getNextLesson(course, lesson));
         model.addAttribute("prevLesson", learningService.getPreviousLesson(course, lesson));
         model.addAttribute("lessonAssignments", assignmentService.findByLesson(lesson));
+        model.addAttribute("comments", commentService.findByLesson(lesson));
+        model.addAttribute("canComment", commentService.canPost(user, course));
         return "learning/learn";
     }
 
@@ -107,6 +123,35 @@ public class LearningController {
             return "redirect:/learn/" + courseId + "?lessonId=" + next.getId();
         }
         return "redirect:/learn/" + courseId + "?lessonId=" + lessonId;
+    }
+
+    // Đăng câu hỏi / trả lời dưới bài học
+    @PostMapping("/learn/{courseId}/lessons/{lessonId}/comments")
+    public String postComment(@PathVariable Long courseId,
+                              @PathVariable Long lessonId,
+                              @RequestParam String content,
+                              @RequestParam(required = false) Long parentId,
+                              Principal principal,
+                              RedirectAttributes redirect) {
+        User user = userService.findByEmail(principal.getName());
+        try {
+            commentService.post(user, lessonId, parentId, content);
+            redirect.addFlashAttribute("success", parentId == null ? "Đã đăng câu hỏi" : "Đã gửi câu trả lời");
+        } catch (BusinessException e) {
+            redirect.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/learn/" + courseId + "?lessonId=" + lessonId + "#qa";
+    }
+
+    @PostMapping("/learn/{courseId}/comments/{commentId}/delete")
+    public String deleteComment(@PathVariable Long courseId,
+                                @PathVariable Long commentId,
+                                Principal principal,
+                                RedirectAttributes redirect) {
+        User user = userService.findByEmail(principal.getName());
+        Long lessonId = commentService.delete(user, commentId);
+        redirect.addFlashAttribute("success", "Đã xóa bình luận");
+        return "redirect:/learn/" + courseId + "?lessonId=" + lessonId + "#qa";
     }
 
     // Trang bài tập của khóa: xem đề, nộp file, xem điểm

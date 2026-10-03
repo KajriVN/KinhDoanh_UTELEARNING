@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Khóa học yêu thích')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <h3 class="page-title mb-3">Khóa học yêu thích <span class="text-muted fs-6" th:text="'(' + ${wishlist.size()} + ')'"></span></h3>
+
+    <div class="row g-4" th:unless="${wishlist.empty}">
+        <div class="col-sm-6 col-lg-4 col-xl-3" th:each="w : ${wishlist}">
+            <div th:replace="~{fragments/layout :: courseCard(${w.course})}"></div>
+        </div>
+    </div>
+
+    <div class="box text-center py-5" th:if="${wishlist.empty}">
+        <i class="bi bi-heart fs-1 text-muted d-block mb-2"></i>
+        <p class="text-muted">Bạn chưa thích khóa học nào. Bấm biểu tượng trái tim trên khóa học để lưu lại xem sau.</p>
+        <a class="btn btn-primary" th:href="@{/courses}">Khám phá khóa học</a>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

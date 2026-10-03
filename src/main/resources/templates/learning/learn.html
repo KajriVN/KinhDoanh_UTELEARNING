@@ -22,6 +22,8 @@
                     <div class="progress-bar bg-success" th:style="|width: ${enrollment.progressPercent}%|"></div>
                 </div>
             </div>
+            <a class="btn btn-warning btn-sm" th:if="${certificateCode != null}" th:href="@{/certificates/{c}(c=${certificateCode})}">
+                <i class="bi bi-patch-check me-1"></i>Chứng chỉ</a>
             <a class="btn btn-outline-secondary btn-sm" th:href="@{/learn/{id}/assignments(id=${course.id})}">
                 <i class="bi bi-clipboard-check me-1"></i>Bài tập</a>
             <a class="btn btn-outline-primary btn-sm" th:href="@{/learn/{id}/chat(id=${course.id})}">
@@ -88,7 +90,70 @@
                         </div>
                     </div>
 
-                    <!-- TODO (hand-off): khu vực Hỏi đáp / bình luận của bài học -->
+                    <!-- ===== Hỏi đáp ===== -->
+                    <div class="mt-4" id="qa">
+                        <h6 class="fw-bold"><i class="bi bi-question-circle me-1"></i>Hỏi đáp
+                            <span class="text-muted fw-normal" th:text="'(' + ${comments.size()} + ' câu hỏi)'"></span></h6>
+
+                        <form th:if="${canComment}" method="post" class="mb-3"
+                              th:action="@{/learn/{c}/lessons/{l}/comments(c=${course.id}, l=${lesson.id})}">
+                            <textarea class="form-control mb-2" name="content" rows="2" maxlength="2000" required
+                                      placeholder="Đặt câu hỏi cho giảng viên và các bạn..."></textarea>
+                            <button class="btn btn-primary btn-sm" type="submit">Đăng câu hỏi</button>
+                        </form>
+                        <div class="alert alert-light border small" th:unless="${canComment}">
+                            Đăng ký khóa học để tham gia hỏi đáp.</div>
+
+                        <div class="border-top py-3" th:each="q : ${comments}" th:id="'c' + ${q.id}">
+                            <div class="d-flex gap-2">
+                                <th:block th:replace="~{fragments/layout :: avatar(${q.user}, 36)}"></th:block>
+                                <div class="flex-grow-1">
+                                    <div>
+                                        <b th:text="${q.user.fullName}"></b>
+                                        <span class="badge bg-primary" th:if="${q.user.id == course.instructor.id}">Giảng viên</span>
+                                        <span class="small text-muted ms-1" th:text="${@fmt.dateTime(q.createdAt)}"></span>
+                                    </div>
+                                    <div style="white-space: pre-line" th:text="${q.content}"></div>
+                                    <div class="small mt-1 d-flex gap-3">
+                                        <a href="#" class="text-decoration-none" th:if="${canComment}"
+                                           th:onclick="|document.getElementById('reply-${q.id}').classList.toggle('d-none'); return false;|">Trả lời</a>
+                                        <form method="post" class="d-inline" th:if="${currentUser != null and (currentUser.id == q.user.id or currentUser.id == course.instructor.id or currentUser.role.name() == 'ADMIN')}"
+                                              th:action="@{/learn/{c}/comments/{id}/delete(c=${course.id}, id=${q.id})}"
+                                              onsubmit="return confirm('Xóa bình luận này?')">
+                                            <button class="btn btn-link btn-sm text-danger p-0" type="submit">Xóa</button>
+                                        </form>
+                                    </div>
+
+                                    <!-- các câu trả lời -->
+                                    <div class="d-flex gap-2 mt-3 ps-2 border-start" th:each="r : ${q.replies}">
+                                        <th:block th:replace="~{fragments/layout :: avatar(${r.user}, 30)}"></th:block>
+                                        <div class="flex-grow-1">
+                                            <div>
+                                                <b th:text="${r.user.fullName}"></b>
+                                                <span class="badge bg-primary" th:if="${r.user.id == course.instructor.id}">Giảng viên</span>
+                                                <span class="small text-muted ms-1" th:text="${@fmt.dateTime(r.createdAt)}"></span>
+                                            </div>
+                                            <div style="white-space: pre-line" th:text="${r.content}"></div>
+                                            <form method="post" class="d-inline" th:if="${currentUser != null and (currentUser.id == r.user.id or currentUser.id == course.instructor.id or currentUser.role.name() == 'ADMIN')}"
+                                                  th:action="@{/learn/{c}/comments/{id}/delete(c=${course.id}, id=${r.id})}"
+                                                  onsubmit="return confirm('Xóa câu trả lời này?')">
+                                                <button class="btn btn-link btn-sm text-danger p-0" type="submit">Xóa</button>
+                                            </form>
+                                        </div>
+                                    </div>
+
+                                    <form method="post" class="mt-2 d-none" th:id="'reply-' + ${q.id}" th:if="${canComment}"
+                                          th:action="@{/learn/{c}/lessons/{l}/comments(c=${course.id}, l=${lesson.id})}">
+                                        <input type="hidden" name="parentId" th:value="${q.id}">
+                                        <textarea class="form-control form-control-sm mb-1" name="content" rows="2" maxlength="2000" required
+                                                  placeholder="Viết câu trả lời..."></textarea>
+                                        <button class="btn btn-primary btn-sm" type="submit">Gửi trả lời</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-muted small" th:if="${comments.empty}">Chưa có câu hỏi nào cho bài học này.</div>
+                    </div>
                 </div>
             </div>
 
@@ -104,6 +169,11 @@
                         <i th:unless="${completedIds.contains(l.id)}" class="bi bi-play-circle text-muted"></i>
                         <span class="flex-grow-1" th:text="${l.title}">Bài</span>
                         <small class="text-muted" th:text="${l.durationMinutes} + 'p'"></small>
+                    </a>
+                    <a th:if="${quizzes.containsKey(s.id) and enrollment != null}" class="lesson-link"
+                       th:href="@{/learn/{c}/quizzes/{q}(c=${course.id}, q=${quizzes.get(s.id).id})}">
+                        <i class="bi bi-patch-question text-warning"></i>
+                        <span class="flex-grow-1" th:text="'Quiz: ' + ${quizzes.get(s.id).title}">Quiz</span>
                     </a>
                 </th:block>
             </div>
