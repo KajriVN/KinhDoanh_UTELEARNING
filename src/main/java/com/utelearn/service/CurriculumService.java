@@ -7,6 +7,7 @@ import com.utelearn.entity.Section;
 import com.utelearn.entity.User;
 import com.utelearn.exception.BusinessException;
 import com.utelearn.exception.NotFoundException;
+import com.utelearn.repository.AssignmentRepository;
 import com.utelearn.repository.LessonProgressRepository;
 import com.utelearn.repository.LessonRepository;
 import com.utelearn.repository.SectionRepository;
@@ -23,15 +24,17 @@ public class CurriculumService {
     private final LessonProgressRepository lessonProgressRepository;
     private final CourseService courseService;
     private final FileUploadService fileUploadService;
+    private final AssignmentRepository assignmentRepository;
 
     public CurriculumService(SectionRepository sectionRepository, LessonRepository lessonRepository,
                              LessonProgressRepository lessonProgressRepository, CourseService courseService,
-                             FileUploadService fileUploadService) {
+                             FileUploadService fileUploadService, AssignmentRepository assignmentRepository) {
         this.sectionRepository = sectionRepository;
         this.lessonRepository = lessonRepository;
         this.lessonProgressRepository = lessonProgressRepository;
         this.courseService = courseService;
         this.fileUploadService = fileUploadService;
+        this.assignmentRepository = assignmentRepository;
     }
 
     // ================== CHƯƠNG ==================
@@ -63,9 +66,10 @@ public class CurriculumService {
     public Long deleteSection(Long sectionId, User user) {
         Section section = getOwnedSection(sectionId, user);
         Long courseId = section.getCourse().getId();
-        // xóa tiến độ học của các bài trong chương trước, nếu không sẽ lỗi khóa ngoại
+        // xóa tiến độ học + bỏ liên kết bài tập của các bài trong chương trước, nếu không sẽ lỗi khóa ngoại
         for (Lesson lesson : section.getLessons()) {
             lessonProgressRepository.deleteByLesson(lesson);
+            assignmentRepository.clearLesson(lesson);
         }
         section.getCourse().getSections().remove(section);
         sectionRepository.delete(section);
@@ -105,6 +109,7 @@ public class CurriculumService {
         Lesson lesson = getOwnedLesson(lessonId, user);
         Long courseId = lesson.getSection().getCourse().getId();
         lessonProgressRepository.deleteByLesson(lesson);
+        assignmentRepository.clearLesson(lesson);
         lesson.getSection().getLessons().remove(lesson);
         lessonRepository.delete(lesson);
         return courseId;

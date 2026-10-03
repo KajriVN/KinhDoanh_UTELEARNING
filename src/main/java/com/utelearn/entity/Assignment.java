@@ -8,7 +8,6 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 // Bài tập do giảng viên giao cho 1 khóa học.
-// TODO (hand-off): đã có bảng + repository, chưa làm service/controller/giao diện.
 @Entity
 @Table(name = "assignments")
 @Getter
@@ -51,5 +50,10 @@ public class Assignment {
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();
+    }
+
+    // đã quá hạn nộp chưa (không có hạn thì không bao giờ quá hạn)
+    public boolean isOverdue() {
+        return dueDate != null && LocalDateTime.now().isAfter(dueDate);
     }
 }

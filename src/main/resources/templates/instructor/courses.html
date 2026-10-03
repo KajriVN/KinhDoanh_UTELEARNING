@@ -58,6 +58,8 @@
                                th:href="@{/instructor/courses/{id}/edit(id=${c.id})}"><i class="bi bi-pencil"></i></a>
                             <a class="btn btn-sm btn-outline-info" title="Học viên"
                                th:href="@{/instructor/courses/{id}/students(id=${c.id})}"><i class="bi bi-people"></i></a>
+                            <a class="btn btn-sm btn-outline-warning" title="Bài tập"
+                               th:href="@{/instructor/courses/{id}/assignments(id=${c.id})}"><i class="bi bi-clipboard-check"></i></a>
                             <form class="d-inline" method="post" th:if="${c.status.name() == 'DRAFT' or c.status.name() == 'REJECTED'}"
                                   th:action="@{/instructor/courses/{id}/submit(id=${c.id})}">
                                 <button class="btn btn-sm btn-success" type="submit" title="Gửi duyệt"><i class="bi bi-send"></i></button>

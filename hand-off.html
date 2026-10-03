@@ -90,7 +90,7 @@
 <main>
 <header class="hero">
   <h1>UTELearn — Tài liệu bàn giao (hand-off)</h1>
-  <div class="muted">Nền tảng kinh doanh khóa học trực tuyến &amp; quản lý học tập số · Đồ án môn Lập trình Web · cập nhật 02/10/2026</div>
+  <div class="muted">Nền tảng kinh doanh khóa học trực tuyến &amp; quản lý học tập số · Đồ án môn Lập trình Web · cập nhật 03/10/2026</div>
   <p>File này dành cho <b>người/agent làm tiếp</b>. Đọc hết mục 1–4 trước khi code, sau đó chọn việc ở mục 8.
      Phần đã làm khoảng <b>50%</b> sản phẩm: toàn bộ <b>CSDL (17 bảng)</b> đã có, phần code chạy được cho luồng chính
      (tài khoản, khóa học, giỏ hàng, thanh toán giả lập, học bài, tiến độ, chat realtime, giảng viên, admin).</p>
@@ -99,11 +99,11 @@
 <!-- =============================================================== -->
 <h2 id="tong-quan">1. Tổng quan &amp; trạng thái</h2>
 <div class="grid">
-  <div class="stat"><b>18 / 34</b><span class="muted">chức năng đã xong (~53%)</span></div>
+  <div class="stat"><b>19 / 34</b><span class="muted">chức năng đã xong (~56%)</span></div>
   <div class="stat"><b>17</b><span class="muted">bảng CSDL (100% schema)</span></div>
-  <div class="stat"><b>14</b><span class="muted">controller · 10 service</span></div>
-  <div class="stat"><b>27</b><span class="muted">trang Thymeleaf</span></div>
-  <div class="stat"><b>70 / 70</b><span class="muted">kịch bản smoke test pass (H2)</span></div>
+  <div class="stat"><b>15</b><span class="muted">controller · 11 service</span></div>
+  <div class="stat"><b>32</b><span class="muted">trang Thymeleaf</span></div>
+  <div class="stat"><b>70 / 72</b><span class="muted">smoke test pass (H2) · xem mục 11</span></div>
 </div>
 
 <div class="card">
@@ -215,7 +215,7 @@ java -jar target/utelearn-0.0.1-SNAPSHOT.jar --spring.profiles.active=h2</code><
   <li>Form: <code>th:action</code> + <code>method="post"</code> (Thymeleaf tự chèn <code>_csrf</code>). Form có file thêm <code>enctype="multipart/form-data"</code>. Validate bằng DTO + <code>@Valid</code> + <code>BindingResult</code>.</li>
   <li>Hiển thị tiền: <code>${@fmt.money(x)}</code> / <code>${@fmt.price(x)}</code> (0 → "Miễn phí"). Ngày: <code>${@fmt.dateTime(t)}</code>. Phân trang: <code>~{fragments/layout :: pagination(${page})}</code>.</li>
   <li>Trang mới copy khung từ trang có sẵn: <code>head(title)</code> → <code>navbar</code> → <code>main</code> (+ <code>flash</code>) → <code>footer</code>. Trang GV/admin có cột trái <code>instructorMenu('key')</code> / <code>adminMenu('key')</code>. Các mục "sắp có" trong menu là chỗ gắn chức năng mới.</li>
-  <li>Upload file: luôn qua <code>FileUploadService</code> (<code>uploadImage</code>, <code>uploadVideo</code>; cần thêm <code>uploadDocument</code> cho bài tập — xem 8.3).</li>
+  <li>Upload file: luôn qua <code>FileUploadService</code> (<code>uploadImage</code>, <code>uploadVideo</code>, <code>uploadDocument</code> cho file pdf/doc/zip).</li>
   <li>Đánh dấu chỗ chưa làm bằng comment <code>// TODO (hand-off): ...</code> — tìm nhanh: <code>grep -rn "TODO (hand-off)" src</code>.</li>
 </ul>
 
@@ -241,7 +241,7 @@ java -jar target/utelearn-0.0.1-SNAPSHOT.jar --spring.profiles.active=h2</code><
 <tr><td>15</td><td>Mua bán</td><td>Lịch sử đơn hàng (học viên)</td><td><span class="b done">XONG</span></td><td>/orders, /orders/{code}</td></tr>
 <tr><td>16</td><td>Học tập</td><td>Khóa học của tôi + % tiến độ</td><td><span class="b done">XONG</span></td><td>/my-courses</td></tr>
 <tr><td>17</td><td>Học tập</td><td>Trang học bài (video Youtube/Cloudinary), đánh dấu hoàn thành, tính tiến độ, học thử</td><td><span class="b done">XONG</span></td><td>LearningService</td></tr>
-<tr><td>18</td><td>Học tập</td><td>Bài tập: GV giao, HV nộp file, GV chấm điểm + nhận xét</td><td><span class="b todo">CHƯA</span></td><td>Bảng assignments, submissions — mục 8.3 (<b>ưu tiên cao</b>, có trong mô tả đề tài)</td></tr>
+<tr><td>18</td><td>Học tập</td><td>Bài tập: GV giao, HV nộp file, GV chấm điểm + nhận xét</td><td><span class="b done">XONG</span></td><td>AssignmentService, InstructorAssignmentController, /learn/{id}/assignments — mục 8.3</td></tr>
 <tr><td>19</td><td>Học tập</td><td>Quiz trắc nghiệm</td><td><span class="b todo">CHƯA</span></td><td>Tùy chọn — mục 8.13</td></tr>
 <tr><td>20</td><td>Học tập</td><td>Chứng chỉ hoàn thành (PDF)</td><td><span class="b todo">CHƯA</span></td><td>Hook ở LearningService.updateProgress — mục 8.10</td></tr>
 <tr><td>21</td><td>Học tập</td><td>Hỏi đáp / bình luận dưới bài học</td><td><span class="b todo">CHƯA</span></td><td>Mục 8.11</td></tr>
@@ -302,6 +302,8 @@ java -jar target/utelearn-0.0.1-SNAPSHOT.jar --spring.profiles.active=h2</code><
 <tr><td>Đăng nhập</td><td>GET/POST <code>/profile</code>; POST <code>/profile/password</code></td><td>Hồ sơ</td></tr>
 <tr><td>GV/Admin</td><td><code>/instructor/courses</code>, <code>/new</code>, <code>/{id}/edit</code>, <code>/{id}/submit</code>, <code>/{id}/delete</code>, <code>/{id}/students</code></td><td>Khóa học của GV</td></tr>
 <tr><td>GV/Admin</td><td><code>/instructor/courses/{id}/curriculum</code>, <code>/courses/{id}/sections</code>, <code>/sections/{id}/rename|delete</code>, <code>/sections/{id}/lessons/new</code>, <code>/lessons/{id}/edit|delete</code></td><td>Chương / bài</td></tr>
+<tr><td>Đăng nhập</td><td>GET <code>/learn/{courseId}/assignments</code>; POST <code>/learn/{c}/assignments/{a}/submit</code> (multipart <code>file</code>, <code>note</code>)</td><td>HV xem đề, nộp bài, xem điểm</td></tr>
+<tr><td>GV/Admin</td><td>GET <code>/instructor/assignments</code>, <code>/instructor/courses/{id}/assignments</code>, GET/POST <code>/courses/{id}/assignments/new</code>, <code>/assignments/{id}/edit</code>; POST <code>/assignments/{id}/delete</code>; GET <code>/assignments/{id}/submissions</code>; POST <code>/submissions/{id}/grade</code></td><td>Bài tập &amp; chấm điểm</td></tr>
 <tr><td>GV/Admin</td><td>GET <code>/instructor/chats</code>, <code>/instructor/chats/{courseId}/{studentId}</code></td><td>Tin nhắn</td></tr>
 <tr><td>Admin</td><td><code>/admin</code>, <code>/admin/users</code> (+<code>/{id}/toggle</code>, <code>/{id}/role</code>), <code>/admin/categories</code> (+<code>/save</code>, <code>/{id}/delete</code>), <code>/admin/courses?status</code> (+<code>/{id}/approve</code>, <code>/{id}/reject</code>)</td><td>Quản trị</td></tr>
 <tr><td>WebSocket</td><td>Endpoint <code>/ws</code> (SockJS) · gửi <code>/app/chat.send</code> · nhận <code>/user/queue/messages</code>, lỗi <code>/user/queue/errors</code></td><td>Chat</td></tr>
@@ -327,7 +329,8 @@ java -jar target/utelearn-0.0.1-SNAPSHOT.jar --spring.profiles.active=h2</code><
   <li>Giỏ hàng: bỏ <code>disabled</code> ô nhập ở <code>cart/cart.html</code>, form gửi kèm <code>couponCode</code> vào POST <code>/checkout</code>. Trong <code>OrderService.checkout</code> (chỗ có TODO): <code>discount = total * percent / 100</code> (làm tròn xuống), set <code>order.coupon</code>, <code>discountAmount</code>, <code>finalAmount</code>. Tăng <code>usedCount</code> trong <code>markPaid</code> (chỉ khi thanh toán thành công).</li>
 </ul>
 
-<h3>8.3 Bài tập &amp; chấm điểm <span class="b todo">ưu tiên cao</span></h3>
+<h3>8.3 Bài tập &amp; chấm điểm <span class="b done">XONG 03/10</span></h3>
+<p class="muted">Đã làm theo spec dưới đây. Khác spec: form tạo/sửa bài tập là trang riêng (<code>instructor/assignment-form.html</code>, giống form bài học) thay vì nằm chung trang danh sách; thêm trang tổng quan <code>/instructor/assignments</code> (đếm bài chưa chấm theo khóa); xóa khóa nháp thì xóa luôn bài tập; nộp lại không chọn file thì giữ file cũ.</p>
 <ul>
   <li>Entity/Repository: <code>Assignment</code>, <code>Submission</code> đã có.</li>
   <li><code>FileUploadService</code>: thêm <code>uploadDocument(file, folder)</code> cho đuôi <code>.pdf .doc .docx .zip .rar .txt</code> (Cloudinary dùng <code>resource_type=raw</code> cho file không phải ảnh/video). Giới hạn 20MB.</li>
@@ -474,6 +477,8 @@ java -jar target/utelearn-0.0.1-SNAPSHOT.jar --spring.profiles.active=h2</code><
   <li>Chat WebSocket: client STOMP Python — HV gửi, GV nhận và ngược lại; người không thuộc cuộc trò chuyện bị chặn.</li>
   <li><code>database/utelearn.sql</code> nạp vào H2 (MySQL mode) + chạy app với <code>ddl-auto=validate</code>: schema khớp entity, đăng nhập bằng tài khoản trong SQL được.</li>
   <li>Test end-to-end bằng <b>trình duyệt thật</b> (Edge headless, <code>shots.js</code>): khách → học viên (thêm giỏ, thanh toán, học, chat) → giảng viên → admin, 31 trang. Chính bước này phát hiện lỗi CSRF #1 ở mục 13 (curl không phát hiện được vì không tải CSS/JS). Sau khi sửa: toàn bộ luồng chạy đúng, smoke test + test WebSocket chạy lại đều pass.</li>
+  <li><b>03/10 — bài tập (35 bước, script Python requests, H2):</b> GV tạo bài (validate tên trống, chặn file .exe, gắn bài học, có hạn nộp) → HV nộp file (bắt buộc file lần đầu, nộp lại giữ file cũ, chặn quá hạn) → GV chấm (chặn điểm &gt; tối đa) → HV thấy điểm + nhận xét, không nộp lại được. Phân quyền: GV khác 403, HV chưa mua không xem/nộp được. Xóa bài học có gắn bài tập, xóa bài tập có bài nộp, xóa khóa nháp có bài tập: không lỗi khóa ngoại. Tất cả pass.</li>
+  <li><b>03/10 — chạy lại <code>docs/tools/smoke.sh</code></b> trên DB H2 mới: 70/72. Phải đặt <code>AVATAR=&lt;đường dẫn ảnh png&gt;</code>, để mặc định <code>/dev/null</code> thì curl trên Windows lỗi ở các bước upload. 2 bước fail (<code>GET /learn/3 (chưa mua)</code> trả 200 thay vì 302, và <code>lý do từ chối</code>) fail y hệt trên code trước khi làm bài tập → không phải do 8.3, chưa điều tra.</li>
   <li>Chưa test: MySQL thật, upload lên Cloudinary thật (chỉ test chế độ lưu local), test tay trên điện thoại thật (mới chụp 1 trang ở khổ 390px).</li>
 </ul>
 
@@ -481,7 +486,7 @@ java -jar target/utelearn-0.0.1-SNAPSHOT.jar --spring.profiles.active=h2</code><
 <h2 id="thu-tu">12. Thứ tự làm tiếp đề xuất</h2>
 <ol>
   <li>Import SQL vào MySQL thật, chạy lại toàn bộ luồng (mục 11).</li>
-  <li>8.3 Bài tập &amp; chấm điểm (đề tài ghi rõ "nộp bài tập").</li>
+  <li><s>8.3 Bài tập &amp; chấm điểm</s> — xong 03/10.</li>
   <li>8.1 VNPay sandbox.</li>
   <li>8.4 Đánh giá, 8.2 Coupon.</li>
   <li>8.5 Thông báo realtime, 8.7 Biểu đồ admin, 8.8 Doanh thu GV.</li>

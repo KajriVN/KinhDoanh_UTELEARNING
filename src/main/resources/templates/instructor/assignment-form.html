@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${form.id == null} ? 'Giao bài tập' : 'Sửa bài tập')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div th:replace="~{fragments/layout :: instructorMenu('assignments')}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <a th:href="@{/instructor/courses/{id}/assignments(id=${course.id})}" class="small text-decoration-none">
+                <i class="bi bi-arrow-left"></i> <span th:text="${course.title}"></span></a>
+            <h3 class="page-title mt-1" th:text="${form.id == null} ? 'Giao bài tập' : 'Sửa bài tập'">Bài tập</h3>
+
+            <form class="box" method="post" enctype="multipart/form-data" th:object="${form}"
+                  th:action="${form.id == null} ? @{/instructor/courses/{id}/assignments/new(id=${course.id})} : @{/instructor/assignments/{id}/edit(id=${form.id})}">
+                <div class="mb-3">
+                    <label class="form-label">Tên bài tập <span class="text-danger">*</span></label>
+                    <input class="form-control" th:field="*{title}"
+                           th:classappend="${#fields.hasErrors('title')} ? 'is-invalid'">
+                    <div class="invalid-feedback" th:errors="*{title}"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Đề bài / yêu cầu</label>
+                    <textarea class="form-control" rows="6" th:field="*{description}"></textarea>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Gắn với bài học</label>
+                        <select class="form-select" th:field="*{lessonId}">
+                            <option value="">-- Không gắn (bài tập chung) --</option>
+                            <option th:each="l : ${course.allLessons}" th:value="${l.id}"
+                                    th:text="${l.section.title} + ' › ' + ${l.title}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Hạn nộp</label>
+                        <input type="datetime-local" class="form-control" th:field="*{dueDate}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Điểm tối đa</label>
+                        <input type="number" min="1" max="100" class="form-control" th:field="*{maxScore}"
+                               th:classappend="${#fields.hasErrors('maxScore')} ? 'is-invalid'">
+                        <div class="invalid-feedback" th:errors="*{maxScore}"></div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">File đề bài (pdf, doc, docx, zip, rar, txt · tối đa 20MB)</label>
+                    <input type="file" class="form-control" th:field="*{attachmentFile}"
+                           accept=".pdf,.doc,.docx,.zip,.rar,.txt">
+                    <div class="form-text" th:if="${assignment != null and assignment.attachmentUrl != null}">
+                        File hiện tại: <a th:href="${assignment.attachmentUrl}" target="_blank">tải về</a>
+                        · chọn file mới nếu muốn thay.
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary" type="submit">Lưu bài tập</button>
+                    <a class="btn btn-outline-secondary" th:href="@{/instructor/courses/{id}/assignments(id=${course.id})}">Hủy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

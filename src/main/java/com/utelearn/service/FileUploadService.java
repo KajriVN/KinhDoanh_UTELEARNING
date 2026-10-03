@@ -23,6 +23,8 @@ public class FileUploadService {
 
     private static final List<String> IMAGE_EXT = List.of(".jpg", ".jpeg", ".png", ".gif", ".webp");
     private static final List<String> VIDEO_EXT = List.of(".mp4", ".webm", ".mov");
+    private static final List<String> DOCUMENT_EXT = List.of(".pdf", ".doc", ".docx", ".zip", ".rar", ".txt");
+    private static final long DOCUMENT_MAX_SIZE = 20L * 1024 * 1024;
 
     @Value("${cloudinary.cloud-name}")
     private String cloudName;
@@ -43,7 +45,7 @@ public class FileUploadService {
             return null;
         }
         checkExtension(file, IMAGE_EXT, "Chỉ chấp nhận ảnh jpg, png, gif, webp");
-        return upload(file, folder);
+        return upload(file, folder, "auto");
     }
 
     public String uploadVideo(MultipartFile file, String folder) {
@@ -51,17 +53,29 @@ public class FileUploadService {
             return null;
         }
         checkExtension(file, VIDEO_EXT, "Chỉ chấp nhận video mp4, webm, mov");
-        return upload(file, folder);
+        return upload(file, folder, "auto");
+    }
+
+    // file đề bài / bài nộp (pdf, word, zip...)
+    public String uploadDocument(MultipartFile file, String folder) {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+        checkExtension(file, DOCUMENT_EXT, "Chỉ chấp nhận file pdf, doc, docx, zip, rar, txt");
+        if (file.getSize() > DOCUMENT_MAX_SIZE) {
+            throw new BusinessException("File tối đa 20MB");
+        }
+        return upload(file, folder, "raw");
     }
 
     public boolean isCloudinaryEnabled() {
         return cloudName != null && !cloudName.isBlank();
     }
 
-    private String upload(MultipartFile file, String folder) {
+    private String upload(MultipartFile file, String folder, String resourceType) {
         try {
             if (isCloudinaryEnabled()) {
-                return uploadToCloudinary(file, folder);
+                return uploadToCloudinary(file, folder, resourceType);
             }
             return saveToLocal(file, folder);
         } catch (IOException e) {
@@ -69,7 +83,7 @@ public class FileUploadService {
         }
     }
 
-    private String uploadToCloudinary(MultipartFile file, String folder) throws IOException {
+    private String uploadToCloudinary(MultipartFile file, String folder, String resourceType) throws IOException {
         if (cloudinary == null) {
             cloudinary = new Cloudinary(ObjectUtils.asMap(
                     "cloud_name", cloudName,
@@ -78,9 +92,14 @@ public class FileUploadService {
                     "secure", true));
         }
         // resource_type = auto -> Cloudinary tự nhận ảnh hay video
-        Map<?, ?> result = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
+        // file tài liệu dùng raw, phải tự đặt public_id kèm đuôi file, nếu không link tải về sẽ mất đuôi
+        Map<String, Object> options = ObjectUtils.asMap(
                 "folder", "utelearn/" + folder,
-                "resource_type", "auto"));
+                "resource_type", resourceType);
+        if ("raw".equals(resourceType)) {
+            options.put("public_id", UUID.randomUUID() + getExtension(file));
+        }
+        Map<?, ?> result = cloudinary.uploader().upload(file.getBytes(), options);
         return (String) result.get("secure_url");
     }
 

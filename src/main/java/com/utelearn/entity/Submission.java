@@ -8,7 +8,6 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 // Bài nộp của học viên cho 1 bài tập.
-// TODO (hand-off): chưa làm chức năng nộp bài / chấm điểm.
 @Entity
 @Table(name = "submissions",
         uniqueConstraints = @UniqueConstraint(columnNames = {"assignment_id", "student_id"}))

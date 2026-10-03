@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Bài tập & chấm điểm')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div th:replace="~{fragments/layout :: instructorMenu('assignments')}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <h3 class="page-title">Bài tập &amp; chấm điểm</h3>
+            <p class="text-muted">Chọn khóa học để giao bài tập hoặc chấm bài nộp.</p>
+
+            <div class="box p-0 table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Khóa học</th>
+                        <th>Số bài tập</th>
+                        <th>Chưa chấm</th>
+                        <th class="text-end pe-3"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="c : ${courses}">
+                        <td class="ps-3">
+                            <div class="fw-semibold" th:text="${c.title}"></div>
+                            <div class="small text-muted" th:text="${c.status.label}"></div>
+                        </td>
+                        <td th:text="${assignmentCounts[c.id]}"></td>
+                        <td>
+                            <span th:if="${ungradedCounts[c.id] > 0}" class="badge bg-warning text-dark"
+                                  th:text="${ungradedCounts[c.id]} + ' bài'"></span>
+                            <span th:unless="${ungradedCounts[c.id] > 0}" class="text-muted">—</span>
+                        </td>
+                        <td class="text-end pe-3">
+                            <a class="btn btn-sm btn-outline-primary"
+                               th:href="@{/instructor/courses/{id}/assignments(id=${c.id})}">
+                                <i class="bi bi-clipboard-check"></i> Quản lý</a>
+                        </td>
+                    </tr>
+                    <tr th:if="${courses.empty}">
+                        <td colspan="4" class="text-center text-muted py-4">Bạn chưa có khóa học nào.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

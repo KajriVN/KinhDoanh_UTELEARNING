@@ -7,10 +7,12 @@ import com.utelearn.entity.Role;
 import com.utelearn.entity.User;
 import com.utelearn.exception.BusinessException;
 import com.utelearn.exception.NotFoundException;
+import com.utelearn.repository.AssignmentRepository;
 import com.utelearn.repository.CartItemRepository;
 import com.utelearn.repository.CourseRepository;
 import com.utelearn.repository.EnrollmentRepository;
 import com.utelearn.repository.OrderItemRepository;
+import com.utelearn.repository.SubmissionRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -32,16 +34,21 @@ public class CourseService {
     private final EnrollmentRepository enrollmentRepository;
     private final OrderItemRepository orderItemRepository;
     private final CartItemRepository cartItemRepository;
+    private final AssignmentRepository assignmentRepository;
+    private final SubmissionRepository submissionRepository;
 
     public CourseService(CourseRepository courseRepository, CategoryService categoryService,
                          FileUploadService fileUploadService, EnrollmentRepository enrollmentRepository,
-                         OrderItemRepository orderItemRepository, CartItemRepository cartItemRepository) {
+                         OrderItemRepository orderItemRepository, CartItemRepository cartItemRepository,
+                         AssignmentRepository assignmentRepository, SubmissionRepository submissionRepository) {
         this.courseRepository = courseRepository;
         this.categoryService = categoryService;
         this.fileUploadService = fileUploadService;
         this.enrollmentRepository = enrollmentRepository;
         this.orderItemRepository = orderItemRepository;
         this.cartItemRepository = cartItemRepository;
+        this.assignmentRepository = assignmentRepository;
+        this.submissionRepository = submissionRepository;
     }
 
     // ================== PHÍA HỌC VIÊN / KHÁCH ==================
@@ -175,6 +182,8 @@ public class CourseService {
             throw new BusinessException("Khóa học đã có học viên/đơn hàng, không thể xóa");
         }
         cartItemRepository.deleteByCourse(course);
+        submissionRepository.deleteByAssignment_Course(course);
+        assignmentRepository.deleteByCourse(course);
         courseRepository.delete(course);
     }
 

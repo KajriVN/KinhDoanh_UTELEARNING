@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Chấm bài')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div th:replace="~{fragments/layout :: instructorMenu('assignments')}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <a th:href="@{/instructor/courses/{id}/assignments(id=${course.id})}" class="small text-decoration-none">
+                <i class="bi bi-arrow-left"></i> <span th:text="${course.title}"></span></a>
+            <h3 class="page-title mt-1" th:text="${assignment.title}">Bài tập</h3>
+            <p class="text-muted">
+                <span th:text="${submissions.size()} + ' bài nộp'"></span> ·
+                Điểm tối đa <b th:text="${assignment.maxScore}"></b>
+                <th:block th:if="${assignment.dueDate != null}">
+                    · Hạn nộp <span th:text="${@fmt.dateTime(assignment.dueDate)}"></span></th:block>
+            </p>
+
+            <div class="box p-0 table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Học viên</th>
+                        <th>Bài làm</th>
+                        <th style="width: 340px">Chấm điểm</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="s : ${submissions}">
+                        <td class="ps-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <th:block th:replace="~{fragments/layout :: avatar(${s.student}, 36)}"></th:block>
+                                <div>
+                                    <div class="fw-semibold" th:text="${s.student.fullName}"></div>
+                                    <div class="small text-muted" th:text="${@fmt.dateTime(s.submittedAt)}"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <a th:href="${s.fileUrl}" target="_blank"><i class="bi bi-download"></i> Tải bài làm</a>
+                            <div class="small text-muted mt-1" th:if="${s.note != null and !s.note.isBlank()}"
+                                 th:text="${s.note}"></div>
+                        </td>
+                        <td>
+                            <form method="post" th:action="@{/instructor/submissions/{id}/grade(id=${s.id})}">
+                                <div class="input-group input-group-sm mb-1">
+                                    <input type="number" name="score" class="form-control" step="0.25" min="0"
+                                           th:max="${assignment.maxScore}" th:value="${s.score}" placeholder="Điểm" required>
+                                    <span class="input-group-text" th:text="'/ ' + ${assignment.maxScore}"></span>
+                                    <button class="btn btn-success" type="submit"
+                                            th:text="${s.score == null} ? 'Chấm' : 'Sửa điểm'">Chấm</button>
+                                </div>
+                                <textarea name="feedback" class="form-control form-control-sm" rows="2"
+                                          placeholder="Nhận xét" th:text="${s.feedback}"></textarea>
+                                <div class="small text-success mt-1" th:if="${s.gradedAt != null}">
+                                    <i class="bi bi-check2"></i> Đã chấm <span th:text="${@fmt.dateTime(s.gradedAt)}"></span></div>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${submissions.empty}">
+                        <td colspan="3" class="text-center text-muted py-4">Chưa có học viên nộp bài.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

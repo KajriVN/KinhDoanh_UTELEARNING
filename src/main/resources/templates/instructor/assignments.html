@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Bài tập của khóa')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div th:replace="~{fragments/layout :: instructorMenu('assignments')}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <a th:href="@{/instructor/assignments}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Bài tập &amp; chấm điểm</a>
+            <div class="d-flex justify-content-between align-items-center mt-1 mb-3">
+                <div>
+                    <h3 class="page-title mb-0">Bài tập</h3>
+                    <div class="text-muted" th:text="${course.title}"></div>
+                </div>
+                <a class="btn btn-primary" th:href="@{/instructor/courses/{id}/assignments/new(id=${course.id})}">
+                    <i class="bi bi-plus-lg"></i> Giao bài tập</a>
+            </div>
+
+            <div class="box p-0 table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Bài tập</th>
+                        <th>Hạn nộp</th>
+                        <th>Điểm tối đa</th>
+                        <th>Bài nộp</th>
+                        <th class="text-end pe-3"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="a : ${assignments}">
+                        <td class="ps-3">
+                            <div class="fw-semibold" th:text="${a.title}"></div>
+                            <div class="small text-muted" th:if="${a.lesson != null}">
+                                <i class="bi bi-link-45deg"></i> <span th:text="${a.lesson.title}"></span></div>
+                        </td>
+                        <td class="text-nowrap">
+                            <span th:if="${a.dueDate != null}" th:text="${@fmt.dateTime(a.dueDate)}"
+                                  th:classappend="${a.overdue} ? 'text-danger'"></span>
+                            <span th:if="${a.dueDate == null}" class="text-muted">Không giới hạn</span>
+                        </td>
+                        <td th:text="${a.maxScore}"></td>
+                        <td th:text="${submissionCounts[a.id]}"></td>
+                        <td class="text-end pe-3 text-nowrap">
+                            <a class="btn btn-sm btn-outline-success" title="Chấm bài"
+                               th:href="@{/instructor/assignments/{id}/submissions(id=${a.id})}"><i class="bi bi-check2-square"></i></a>
+                            <a class="btn btn-sm btn-outline-secondary" title="Sửa"
+                               th:href="@{/instructor/assignments/{id}/edit(id=${a.id})}"><i class="bi bi-pencil"></i></a>
+                            <form class="d-inline" method="post" th:action="@{/instructor/assignments/{id}/delete(id=${a.id})}"
+                                  onsubmit="return confirm('Xóa bài tập này? Các bài nộp cũng sẽ bị xóa.')">
+                                <button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${assignments.empty}">
+                        <td colspan="5" class="text-center text-muted py-4">Chưa có bài tập nào.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
