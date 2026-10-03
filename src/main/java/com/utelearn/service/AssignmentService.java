@@ -29,15 +29,17 @@ public class AssignmentService {
     private final CourseService courseService;
     private final EnrollmentService enrollmentService;
     private final FileUploadService fileUploadService;
+    private final NotificationService notificationService;
 
     public AssignmentService(AssignmentRepository assignmentRepository, SubmissionRepository submissionRepository,
                              CourseService courseService, EnrollmentService enrollmentService,
-                             FileUploadService fileUploadService) {
+                             FileUploadService fileUploadService, NotificationService notificationService) {
         this.assignmentRepository = assignmentRepository;
         this.submissionRepository = submissionRepository;
         this.courseService = courseService;
         this.enrollmentService = enrollmentService;
         this.fileUploadService = fileUploadService;
+        this.notificationService = notificationService;
     }
 
     public Assignment findById(Long id) {
@@ -128,7 +130,11 @@ public class AssignmentService {
         submission.setScore(score);
         submission.setFeedback(feedback);
         submission.setGradedAt(LocalDateTime.now());
-        return submissionRepository.save(submission);
+        submissionRepository.save(submission);
+        notificationService.notify(submission.getStudent(), "Bài tập đã được chấm",
+                "Bài \"" + assignment.getTitle() + "\": " + score + "/" + assignment.getMaxScore() + " điểm.",
+                "/learn/" + assignment.getCourse().getId() + "/assignments#a" + assignment.getId());
+        return submission;
     }
 
     private void copyFormToAssignment(AssignmentForm form, Assignment assignment) {
@@ -198,6 +204,10 @@ public class AssignmentService {
         }
         submission.setNote(note);
         submission.setSubmittedAt(LocalDateTime.now());
-        return submissionRepository.save(submission);
+        submissionRepository.save(submission);
+        notificationService.notify(assignment.getCourse().getInstructor(), "Có bài nộp mới",
+                student.getFullName() + " đã nộp bài \"" + assignment.getTitle() + "\".",
+                "/instructor/assignments/" + assignment.getId() + "/submissions");
+        return submission;
     }
 }

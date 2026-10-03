@@ -7,6 +7,7 @@ import com.utelearn.entity.User;
 import com.utelearn.exception.BusinessException;
 import com.utelearn.service.ChatService;
 import com.utelearn.service.CourseService;
+import com.utelearn.service.NotificationService;
 import com.utelearn.service.UserService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -26,13 +27,15 @@ public class ChatController {
     private final CourseService courseService;
     private final UserService userService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final NotificationService notificationService;
 
     public ChatController(ChatService chatService, CourseService courseService, UserService userService,
-                          SimpMessagingTemplate messagingTemplate) {
+                          SimpMessagingTemplate messagingTemplate, NotificationService notificationService) {
         this.chatService = chatService;
         this.courseService = courseService;
         this.userService = userService;
         this.messagingTemplate = messagingTemplate;
+        this.notificationService = notificationService;
     }
 
     // Học viên mở khung chat với giảng viên của khóa
@@ -64,6 +67,8 @@ public class ChatController {
     private String openChat(Course course, User student, User me, Model model) {
         chatService.checkCanAccess(me, course, student);
         chatService.markAsRead(course, student, me);
+        // vào khung chat rồi thì thông báo tin nhắn của khung này coi như đã đọc
+        notificationService.markReadByLink(me, chatLink(course, student, me));
 
         model.addAttribute("course", course);
         model.addAttribute("student", student);
@@ -72,6 +77,14 @@ public class ChatController {
         model.addAttribute("partner", me.getId().equals(student.getId()) ? course.getInstructor() : student);
         model.addAttribute("messages", chatService.getMessages(course, student));
         return "chat/chat";
+    }
+
+    // link mở khung chat của cuộc trò chuyện này, tính theo góc nhìn của người nhận
+    private String chatLink(Course course, User student, User viewer) {
+        if (viewer.getId().equals(student.getId())) {
+            return "/learn/" + course.getId() + "/chat";
+        }
+        return "/instructor/chats/" + course.getId() + "/" + student.getId();
     }
 
     // Nhận tin nhắn từ client gửi lên /app/chat.send
@@ -85,6 +98,13 @@ public class ChatController {
 
             messagingTemplate.convertAndSendToUser(saved.getStudent().getEmail(), "/queue/messages", out);
             messagingTemplate.convertAndSendToUser(saved.getCourse().getInstructor().getEmail(), "/queue/messages", out);
+
+            // thông báo cho người nhận (không phải người gửi)
+            User sender = saved.getSender();
+            User receiver = sender.getId().equals(saved.getStudent().getId())
+                    ? saved.getCourse().getInstructor() : saved.getStudent();
+            notificationService.notify(receiver, "Tin nhắn mới từ " + sender.getFullName(), saved.getContent(),
+                    chatLink(saved.getCourse(), saved.getStudent(), receiver));
         } catch (BusinessException e) {
             messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/errors", e.getMessage());
         }

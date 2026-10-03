@@ -12,7 +12,11 @@ import com.utelearn.repository.CartItemRepository;
 import com.utelearn.repository.CourseRepository;
 import com.utelearn.repository.EnrollmentRepository;
 import com.utelearn.repository.OrderItemRepository;
+import com.utelearn.repository.QuizAttemptRepository;
+import com.utelearn.repository.QuizRepository;
 import com.utelearn.repository.SubmissionRepository;
+import com.utelearn.repository.UserRepository;
+import com.utelearn.repository.WishlistRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -36,11 +40,19 @@ public class CourseService {
     private final CartItemRepository cartItemRepository;
     private final AssignmentRepository assignmentRepository;
     private final SubmissionRepository submissionRepository;
+    private final NotificationService notificationService;
+    private final UserRepository userRepository;
+    private final WishlistRepository wishlistRepository;
+    private final QuizRepository quizRepository;
+    private final QuizAttemptRepository quizAttemptRepository;
 
     public CourseService(CourseRepository courseRepository, CategoryService categoryService,
                          FileUploadService fileUploadService, EnrollmentRepository enrollmentRepository,
                          OrderItemRepository orderItemRepository, CartItemRepository cartItemRepository,
-                         AssignmentRepository assignmentRepository, SubmissionRepository submissionRepository) {
+                         AssignmentRepository assignmentRepository, SubmissionRepository submissionRepository,
+                         NotificationService notificationService, UserRepository userRepository,
+                         WishlistRepository wishlistRepository, QuizRepository quizRepository,
+                         QuizAttemptRepository quizAttemptRepository) {
         this.courseRepository = courseRepository;
         this.categoryService = categoryService;
         this.fileUploadService = fileUploadService;
@@ -49,6 +61,11 @@ public class CourseService {
         this.cartItemRepository = cartItemRepository;
         this.assignmentRepository = assignmentRepository;
         this.submissionRepository = submissionRepository;
+        this.notificationService = notificationService;
+        this.userRepository = userRepository;
+        this.wishlistRepository = wishlistRepository;
+        this.quizRepository = quizRepository;
+        this.quizAttemptRepository = quizAttemptRepository;
     }
 
     // ================== PHÍA HỌC VIÊN / KHÁCH ==================
@@ -173,6 +190,11 @@ public class CourseService {
         course.setStatus(CourseStatus.PENDING);
         course.setRejectReason(null);
         courseRepository.save(course);
+        for (User admin : userRepository.findByRole(Role.ADMIN)) {
+            notificationService.notify(admin, "Khóa học chờ duyệt",
+                    "Giảng viên " + user.getFullName() + " gửi duyệt khóa \"" + course.getTitle() + "\".",
+                    "/admin/courses?status=PENDING");
+        }
     }
 
     @Transactional
@@ -182,6 +204,9 @@ public class CourseService {
             throw new BusinessException("Khóa học đã có học viên/đơn hàng, không thể xóa");
         }
         cartItemRepository.deleteByCourse(course);
+        wishlistRepository.deleteByCourse(course);
+        quizAttemptRepository.deleteByQuiz_Section_Course(course);
+        quizRepository.deleteAll(quizRepository.findBySection_Course(course));
         submissionRepository.deleteByAssignment_Course(course);
         assignmentRepository.deleteByCourse(course);
         courseRepository.delete(course);
@@ -210,7 +235,8 @@ public class CourseService {
         course.setStatus(CourseStatus.PUBLISHED);
         course.setRejectReason(null);
         courseRepository.save(course);
-        // TODO (hand-off): gửi Notification cho giảng viên
+        notificationService.notify(course.getInstructor(), "Khóa học đã được duyệt",
+                "Khóa học \"" + course.getTitle() + "\" đã được xuất bản.", "/courses/" + course.getId());
     }
 
     @Transactional
@@ -225,6 +251,8 @@ public class CourseService {
         course.setStatus(CourseStatus.REJECTED);
         course.setRejectReason(reason.trim());
         courseRepository.save(course);
+        notificationService.notify(course.getInstructor(), "Khóa học bị từ chối",
+                "Khóa học \"" + course.getTitle() + "\" bị từ chối: " + reason.trim(), "/instructor/courses");
     }
 
     public long countByStatus(CourseStatus status) {

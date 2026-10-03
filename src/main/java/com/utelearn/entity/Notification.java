@@ -8,7 +8,6 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 // Thông báo cho người dùng (vd: khóa học được duyệt, có tin nhắn mới, bài tập được chấm...).
-// TODO (hand-off): chưa đẩy realtime qua WebSocket + chưa có icon chuông trên navbar.
 @Entity
 @Table(name = "notifications")
 @Getter
