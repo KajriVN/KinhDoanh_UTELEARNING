@@ -7,6 +7,7 @@ import com.utelearn.service.CartService;
 import com.utelearn.service.CategoryService;
 import com.utelearn.service.CourseService;
 import com.utelearn.service.EnrollmentService;
+import com.utelearn.service.ReviewService;
 import com.utelearn.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -27,15 +28,17 @@ public class CourseController {
     private final EnrollmentService enrollmentService;
     private final CartService cartService;
     private final UserService userService;
+    private final ReviewService reviewService;
 
     public CourseController(CourseService courseService, CategoryService categoryService,
                             EnrollmentService enrollmentService, CartService cartService,
-                            UserService userService) {
+                            UserService userService, ReviewService reviewService) {
         this.courseService = courseService;
         this.categoryService = categoryService;
         this.enrollmentService = enrollmentService;
         this.cartService = cartService;
         this.userService = userService;
+        this.reviewService = reviewService;
     }
 
     // Danh sách + tìm kiếm + lọc + phân trang
@@ -69,7 +72,33 @@ public class CourseController {
         model.addAttribute("enrolled", enrollmentService.isEnrolled(user, course));
         model.addAttribute("inCart", cartService.isInCart(user, course));
         model.addAttribute("canManage", courseService.canManage(course, user));
+        model.addAttribute("reviews", reviewService.findByCourse(course));
+        model.addAttribute("myReview", reviewService.findMine(user, course));
         return "course/detail";
+    }
+
+    // Gửi / sửa đánh giá của mình
+    @PostMapping("/courses/{id}/reviews")
+    public String saveReview(@PathVariable Long id,
+                             @RequestParam int rating,
+                             @RequestParam(required = false) String comment,
+                             Principal principal, RedirectAttributes redirect) {
+        User user = userService.findByEmail(principal.getName());
+        try {
+            reviewService.save(user, id, rating, comment);
+            redirect.addFlashAttribute("success", "Cảm ơn bạn đã đánh giá khóa học");
+        } catch (BusinessException e) {
+            redirect.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/courses/" + id + "#reviews";
+    }
+
+    @PostMapping("/courses/{id}/reviews/delete")
+    public String deleteReview(@PathVariable Long id, Principal principal, RedirectAttributes redirect) {
+        User user = userService.findByEmail(principal.getName());
+        reviewService.deleteMine(user, id);
+        redirect.addFlashAttribute("success", "Đã xóa đánh giá của bạn");
+        return "redirect:/courses/" + id + "#reviews";
     }
 
     // Đăng ký khóa học miễn phí (không cần qua giỏ hàng)

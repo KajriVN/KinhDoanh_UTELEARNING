@@ -8,7 +8,6 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 // Đánh giá khóa học (1-5 sao).
-// TODO (hand-off): chưa làm form đánh giá + hiển thị điểm trung bình.
 @Entity
 @Table(name = "reviews",
         uniqueConstraints = @UniqueConstraint(columnNames = {"course_id", "user_id"}))

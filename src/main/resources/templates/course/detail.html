@@ -18,6 +18,11 @@
                     </nav>
                     <h1 class="h2" th:text="${course.title}">Tên khóa học</h1>
                     <p class="lead fs-6 mb-3" th:text="${course.shortDescription}">Mô tả ngắn</p>
+                    <div class="mb-2 small" th:if="${course.reviewCount != null and course.reviewCount > 0}">
+                        <b class="text-warning" th:text="${#numbers.formatDecimal(course.averageRating, 1, 1)}">4.5</b>
+                        <span th:replace="~{fragments/layout :: stars(${course.averageRating})}"></span>
+                        <a href="#reviews" class="text-info text-decoration-none" th:text="'(' + ${course.reviewCount} + ' đánh giá)'"></a>
+                    </div>
                     <div class="d-flex flex-wrap gap-3 small">
                         <span><i class="bi bi-person-video3 me-1"></i>GV: <b th:text="${course.instructor.fullName}"></b></span>
                         <span><i class="bi bi-people me-1"></i><b th:text="${studentCount}">0</b> học viên</span>
@@ -95,7 +100,53 @@
                     </div>
                 </div>
 
-                <!-- TODO (hand-off): khu vực đánh giá & nhận xét (bảng reviews) -->
+                <!-- ===== Đánh giá ===== -->
+                <div class="box mb-4" id="reviews">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">Đánh giá của học viên</h5>
+                        <span class="small" th:if="${course.reviewCount != null and course.reviewCount > 0}">
+                            <b th:text="${#numbers.formatDecimal(course.averageRating, 1, 1)}">0</b> / 5
+                            <span th:replace="~{fragments/layout :: stars(${course.averageRating})}"></span>
+                            · <span th:text="${course.reviewCount}">0</span> lượt
+                        </span>
+                    </div>
+
+                    <!-- form: chỉ học viên đã ghi danh -->
+                    <form th:if="${enrolled}" method="post" th:action="@{/courses/{id}/reviews(id=${course.id})}"
+                          class="border rounded p-3 mb-3 bg-light">
+                        <div class="fw-semibold mb-2" th:text="${myReview == null} ? 'Đánh giá khóa học này' : 'Đánh giá của bạn'"></div>
+                        <div class="mb-2 d-flex gap-3 flex-wrap">
+                            <label class="form-check-label" th:each="n : ${#numbers.sequence(5, 1, -1)}">
+                                <input class="form-check-input" type="radio" name="rating" th:value="${n}" required
+                                       th:checked="${myReview != null and myReview.rating == n}">
+                                <span th:text="${n} + ' ★'"></span>
+                            </label>
+                        </div>
+                        <textarea class="form-control mb-2" name="comment" rows="3" maxlength="2000"
+                                  placeholder="Chia sẻ cảm nhận của bạn (không bắt buộc)"
+                                  th:text="${myReview != null} ? ${myReview.comment}"></textarea>
+                        <button class="btn btn-primary btn-sm" type="submit"
+                                th:text="${myReview == null} ? 'Gửi đánh giá' : 'Cập nhật đánh giá'">Gửi</button>
+                    </form>
+                    <form th:if="${enrolled and myReview != null}" method="post" class="mb-3"
+                          th:action="@{/courses/{id}/reviews/delete(id=${course.id})}"
+                          onsubmit="return confirm('Xóa đánh giá của bạn?')">
+                        <button class="btn btn-link btn-sm text-danger p-0" type="submit">Xóa đánh giá của tôi</button>
+                    </form>
+
+                    <div class="d-flex gap-3 py-3 border-top" th:each="r : ${reviews}">
+                        <th:block th:replace="~{fragments/layout :: avatar(${r.user}, 40)}"></th:block>
+                        <div>
+                            <div>
+                                <b th:text="${r.user.fullName}"></b>
+                                <span th:replace="~{fragments/layout :: stars(${r.rating})}"></span>
+                                <span class="small text-muted ms-1" th:text="${@fmt.date(r.createdAt)}"></span>
+                            </div>
+                            <div th:if="${r.comment != null}" th:text="${r.comment}" style="white-space: pre-line"></div>
+                        </div>
+                    </div>
+                    <div class="text-muted" th:if="${reviews.empty}">Chưa có đánh giá nào.</div>
+                </div>
             </div>
 
             <!-- ===== Hộp mua ===== -->
@@ -122,6 +173,14 @@
                             <a class="btn btn-outline-secondary w-100" th:href="@{/learn/{id}(id=${course.id})}">
                                 <i class="bi bi-eye me-1"></i>Xem như học viên</a>
                         </th:block>
+
+                        <form th:if="${!canManage}" method="post" class="mb-2"
+                              th:action="@{/wishlist/toggle/{id}(id=${course.id})}">
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                <i th:class="${wishlistIds.contains(course.id)} ? 'bi bi-heart-fill me-1' : 'bi bi-heart me-1'"></i>
+                                <span th:text="${wishlistIds.contains(course.id)} ? 'Đã yêu thích' : 'Thêm vào yêu thích'"></span>
+                            </button>
+                        </form>
 
                         <!-- chưa sở hữu -->
                         <th:block th:if="${!enrolled and !canManage and course.status.name() == 'PUBLISHED'}">
@@ -157,6 +216,7 @@
     </div>
 </main>
 
+<div th:replace="~{fragments/layout :: chatbot}"></div>
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 </body>
 </html>

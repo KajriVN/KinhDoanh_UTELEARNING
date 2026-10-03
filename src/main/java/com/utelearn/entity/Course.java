@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Formula;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -60,6 +61,13 @@ public class Course {
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("position ASC")
     private List<Section> sections = new ArrayList<>();
+
+    // tính sẵn trong câu SELECT (không có cột thật), dùng cho ngôi sao ở thẻ khóa học
+    @Formula("(SELECT AVG(r.rating) FROM reviews r WHERE r.course_id = id)")
+    private Double averageRating;
+
+    @Formula("(SELECT COUNT(*) FROM reviews r WHERE r.course_id = id)")
+    private Integer reviewCount;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

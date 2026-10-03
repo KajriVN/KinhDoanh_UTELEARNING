@@ -8,13 +8,17 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
-// TODO (hand-off): dùng cho chức năng đánh giá khóa học
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     List<Review> findByCourseOrderByCreatedAtDesc(Course course);
 
     boolean existsByCourseAndUser(Course course, User user);
+
+    Optional<Review> findByCourseAndUser(Course course, User user);
+
+    void deleteByCourse(Course course);
 
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.course = :course")
     Double averageRating(@Param("course") Course course);
