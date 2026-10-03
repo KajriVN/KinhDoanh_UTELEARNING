@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Kết quả thanh toán VNPay')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-5" style="max-width: 640px">
+    <div class="box text-center py-5">
+        <th:block th:switch="${result.name()}">
+            <div th:case="'PAID'">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 3.5rem"></i>
+                <h4 class="fw-bold mt-3">Thanh toán thành công</h4>
+                <p class="text-muted">Đơn <b th:text="${orderCode}"></b> đã được thanh toán qua VNPay. Các khóa học đã được thêm vào tài khoản của bạn.</p>
+            </div>
+            <div th:case="'ALREADY_CONFIRMED'">
+                <i class="bi bi-info-circle-fill text-primary" style="font-size: 3.5rem"></i>
+                <h4 class="fw-bold mt-3">Đơn hàng đã được xử lý</h4>
+                <p class="text-muted">Đơn <b th:text="${orderCode}"></b> đã được xác nhận trước đó.</p>
+            </div>
+            <div th:case="'FAILED'">
+                <i class="bi bi-x-circle-fill text-danger" style="font-size: 3.5rem"></i>
+                <h4 class="fw-bold mt-3">Thanh toán không thành công</h4>
+                <p class="text-muted">Giao dịch của đơn <b th:text="${orderCode}"></b> bị hủy hoặc thất bại. Bạn chưa bị trừ tiền.</p>
+            </div>
+            <div th:case="'INVALID_SIGNATURE'">
+                <i class="bi bi-shield-exclamation text-danger" style="font-size: 3.5rem"></i>
+                <h4 class="fw-bold mt-3">Chữ ký không hợp lệ</h4>
+                <p class="text-muted">Dữ liệu trả về từ VNPay không đúng chữ ký nên không được chấp nhận.</p>
+            </div>
+            <div th:case="'AMOUNT_MISMATCH'">
+                <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 3.5rem"></i>
+                <h4 class="fw-bold mt-3">Số tiền không khớp</h4>
+                <p class="text-muted">Số tiền VNPay ghi nhận không khớp với đơn hàng nên đơn chưa được xác nhận.</p>
+            </div>
+            <div th:case="*">
+                <i class="bi bi-question-circle-fill text-secondary" style="font-size: 3.5rem"></i>
+                <h4 class="fw-bold mt-3">Không tìm thấy đơn hàng</h4>
+            </div>
+        </th:block>
+
+        <div class="d-flex gap-2 justify-content-center mt-3">
+            <a class="btn btn-primary" th:if="${result.name() == 'PAID' or result.name() == 'ALREADY_CONFIRMED'}"
+               th:href="@{/my-courses}">Khóa học của tôi</a>
+            <a class="btn btn-outline-secondary" th:if="${orderCode != null and result.name() != 'INVALID_SIGNATURE' and result.name() != 'ORDER_NOT_FOUND'}"
+               th:href="@{/orders/{c}(c=${orderCode})}">Xem đơn hàng</a>
+            <a class="btn btn-outline-secondary" th:href="@{/}">Về trang chủ</a>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

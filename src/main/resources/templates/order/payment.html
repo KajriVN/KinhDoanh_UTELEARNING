@@ -13,8 +13,8 @@
         <div class="box" style="border-radius: 0 0 14px 14px">
             <div class="alert alert-warning small">
                 <i class="bi bi-info-circle me-1"></i>
-                Đây là trang thanh toán giả lập để demo. Bấm "Xác nhận" coi như đã trả tiền thành công.
-                Tích hợp VNPay thật xem file <b>hand-off.html</b>.
+                Đây là cổng thanh toán giả lập để demo: bấm "Xác nhận" coi như đã trả tiền thành công.
+                Muốn thanh toán thật qua VNPay sandbox, cấu hình <b>VNPAY_TMN_CODE</b> và <b>VNPAY_HASH_SECRET</b>.
             </div>
 
             <table class="table table-sm">
@@ -31,10 +31,20 @@
                 </li>
             </ul>
 
+            <div class="d-flex justify-content-between small text-muted mb-1" th:if="${order.discountAmount.signum() > 0}">
+                <span>Đã giảm <b th:if="${order.coupon != null}" th:text="'(' + ${order.coupon.code} + ')'"></b></span>
+                <span th:text="'- ' + ${@fmt.money(order.discountAmount)}"></span>
+            </div>
             <div class="d-flex justify-content-between fs-5 fw-bold mb-4">
                 <span>Số tiền thanh toán</span>
                 <span class="price" th:text="${@fmt.money(order.finalAmount)}"></span>
             </div>
+
+            <form th:if="${vnpayEnabled}" class="mb-2" th:action="@{/payment/{code}/vnpay(code=${order.orderCode})}" method="post">
+                <button class="btn btn-danger w-100 py-2" type="submit">
+                    <i class="bi bi-credit-card me-1"></i>Thanh toán qua VNPay</button>
+            </form>
+            <div class="text-center text-muted small mb-2" th:if="${vnpayEnabled}">hoặc dùng cổng giả lập để demo</div>
 
             <div class="d-flex gap-2">
                 <form class="flex-grow-1" th:action="@{/payment/{code}/confirm(code=${order.orderCode})}" method="post">
